@@ -262,7 +262,7 @@ arch-chroot /mnt
    ```
    If you put this in your repo as `packages.txt` (one per line, `#` comments allowed):
    ```
-   curl -LO https://raw.githubusercontent.com/YOURUSER/YOURREPO/main/packages.txt
+   curl -LO https://raw.githubusercontent.com/NoahWLono/momiji-dots/main/packages.txt
    sudo pacman -S --needed - < packages.txt
    ```
    Much of this overlaps with what `caelestia install` pulls later (foot, fish, starship, thunar, pipewire, fonts, and more, per its manifest). `--needed` makes the overlap free.
