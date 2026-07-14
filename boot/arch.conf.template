@@ -1,0 +1,4 @@
+title   Arch Linux
+linux   /vmlinuz-linux
+initrd  /initramfs-linux.img
+options root=UUID=FILL-ME-IN-FROM-BLKID rootflags=subvol=@ rw
