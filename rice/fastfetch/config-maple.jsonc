@@ -1,0 +1,14 @@
+// Maple as the fastfetch logo, rendered via sixel (foot supports it).
+// Run non-destructively:
+//   fastfetch --config ~/momiji-dots/rice/fastfetch/config-maple.jsonc
+// Deploy to ~/.config/fastfetch/config.jsonc only if you want to override
+// the config Caelestia ships.
+// WARNING (verify): logo option names drift between fastfetch versions;
+// check `fastfetch --help-logo` if this renders as text.
+{
+    "logo": {
+        "source": "~/Pictures/Wallpapers/maple.png",
+        "width": 34,
+        "padding": { "right": 2 }
+    }
+}
