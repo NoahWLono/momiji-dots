@@ -153,7 +153,7 @@ trap 'rm -f "$stale_file" "$placeholder_file"' EXIT
 
 while IFS= read -r -d '' file; do
     case "$file" in
-        *.wav|*.png|*/.git/*|*/scripts/validate-repo.sh) continue ;;
+        *.wav|*.png|*/.git/*|*/scripts/validate-repo.sh|*/scripts/preflight.sh) continue ;;
     esac
     if grep -nE "$bad_markers" "$file" >/dev/null 2>&1; then
         printf '%s:\n' "${file#"$ROOT/"}" >>"$stale_file"
