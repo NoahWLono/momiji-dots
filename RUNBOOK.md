@@ -1,154 +1,352 @@
-# Momiji encrypted clean-install runbook
+# FINAL: HP 255 G10 from sealed box to encrypted Arch, SDDM, Hyprland, Caelestia, and Momiji
 
-This runbook targets one user and these fixed decisions:
+This is the complete install list for one human user, `noah`.
 
-- Arch Linux on the entire internal drive
+It uses this exact repository branch:
+
+```text
+https://github.com/NoahWLono/momiji-dots/tree/cleanup/arch-preflight
+```
+
+Until that branch is merged, every clone command in this runbook explicitly
+selects `cleanup/arch-preflight`. Do not substitute `main`.
+
+## What the finished machine will use
+
+- Arch Linux
+- UEFI and systemd-boot
 - one 1 GiB EFI System Partition
-- one LUKS2 encrypted partition containing btrfs
+- one LUKS2-encrypted partition containing root and home
 - btrfs subvolumes `@` and `@home`
 - zram swap, with no disk swap and no hibernation
-- systemd-boot
-- hostname `momiji`
-- user `noah`, Fish login shell
-- SDDM graphical login with no autologin
-- Hyprland with current Caelestia Lua configuration
-- timezone `America/Toronto`, locale `en_CA.UTF-8`
+- one normal human account, `noah`
+- SDDM as the graphical username and password screen
+- Hyprland
+- Caelestia
+- the Momiji repository configuration, sounds, wallpaper, applications, and optional rice
 
-The normal boot sequence is systemd-boot, a LUKS passphrase prompt, the SDDM
-login screen, then Hyprland. The disk-unlock passphrase and the user login
-password are separate credentials.
+The normal boot sequence will be:
 
-## Encryption boundary
+1. systemd-boot
+2. LUKS disk-unlock passphrase
+3. SDDM graphical login
+4. Hyprland and Caelestia
 
-LUKS protects root, home, installed applications, logs, and all other data in
-the large encrypted partition. The EFI System Partition must remain readable by
-firmware, so it contains systemd-boot, the kernel, and the initramfs and is not
-encrypted.
+The LUKS passphrase and the `noah` account password are separate credentials.
 
-With Secure Boot disabled, encryption protects data at rest but does not
-authenticate the boot files. A later Secure Boot and Unified Kernel Image
-project can protect that boot chain. It is not required for this clean install.
+---
 
-Use an ASCII-only LUKS passphrase so the early boot keyboard layout cannot make
-it impossible to type. A long multiword passphrase is easier to enter reliably
-than a short symbol-heavy one. Store a recovery copy somewhere that is not this
-laptop.
+# Part I: Before the laptop arrives
 
-## Phase 0: Preflight
+## 1. Finish and publish the repository branch
 
-1. Apply the encrypted-login bundle to the repository, then run:
+On the Mac that contains the repository:
 
-   ```sh
-   cd ~/momiji-dots
-   ./scripts/validate-repo.sh
-   git status
-   git add -A
-   git commit -m "use LUKS encryption and SDDM login"
-   git push
-   ```
+```sh
+cd ~/momiji-dots
 
-2. Confirm the public branch contains the required files:
+git switch cleanup/arch-preflight
+./scripts/validate-repo.sh
+git diff --check
+git status
+```
 
-   ```sh
-   B=https://raw.githubusercontent.com/NoahWLono/momiji-dots/main
-   for path in \
-     packages.txt \
-     boot/arch.conf.template \
-     etc/mkinitcpio.conf.d/momiji-encryption.conf \
-     etc/sddm.conf.d/10-momiji.conf \
-     scripts/enable-display-manager.sh; do
-       curl -fsS "$B/$path" >/dev/null || exit 1
-       printf 'OK  %s\n' "$path"
-   done
-   ```
+The acceptable result is:
 
-3. Download the current Arch ISO from the official Arch site and verify its
-   signature or checksum using the official instructions.
+- `Validation complete: 0 failure(s), ...`
+- `git diff --check` prints nothing
+- any Fish or Lua parser messages are warnings only when those parsers are not installed on macOS
 
-4. On macOS, identify the USB carefully and write the ISO. Replace `disk4` and
-   the ISO filename with the actual values:
+Do not use `scripts/preflight.sh` for this installation. The canonical check is:
 
-   ```sh
-   diskutil list
-   diskutil unmountDisk /dev/disk4
-   sudo dd if=archlinux-x86_64.iso of=/dev/rdisk4 bs=4m
-   diskutil eject /dev/disk4
-   ```
+```sh
+./scripts/validate-repo.sh
+```
 
-   Press `Ctrl+T` while `dd` runs to print progress.
+Publish any remaining changes:
 
-5. Keep the Wi-Fi password and the planned LUKS passphrase available away from
-   the laptop.
+```sh
+git add -A
+git commit -m "finalize encrypted Arch install runbook"
+git push -u origin cleanup/arch-preflight
+```
 
-## Phase 1: Firmware
+Confirm the branch is visible:
 
-1. Optionally boot Windows once to install available firmware updates.
-2. Enter firmware setup. HP commonly uses `Esc`, then `F10`, and the one-time
-   boot menu commonly uses `F9`. Verify the prompts shown by the machine.
-3. Confirm UEFI boot mode and disable Fast Boot.
-4. Disable Secure Boot for this unsigned systemd-boot setup.
-5. Save and start the USB's UEFI entry.
+```sh
+git ls-remote --heads origin cleanup/arch-preflight
+```
 
-## Phase 2: Live ISO and network
+It must print a commit hash and:
 
-Confirm UEFI mode:
+```text
+refs/heads/cleanup/arch-preflight
+```
+
+## 2. Prepare passwords before install day
+
+Prepare three credentials:
+
+1. **LUKS passphrase**  
+   Use a long ASCII-only multiword passphrase. Avoid characters that depend on
+   a special keyboard layout. Store a recovery copy somewhere other than the
+   laptop.
+
+2. **`noah` account password**  
+   This is used by SDDM and `sudo`.
+
+3. **Root password**  
+   This is a break-glass recovery credential. Root will not appear as a normal
+   SDDM user.
+
+Do not put any of these in the Git repository.
+
+## 3. Download and verify the Arch ISO
+
+Download the current Arch ISO from an official Arch mirror.
+
+Follow the current official Arch instructions to verify its signature or
+checksum before writing it to USB.
+
+## 4. Write the ISO to USB from macOS
+
+Identify the USB device carefully:
+
+```sh
+diskutil list
+```
+
+The example below assumes the USB is `/dev/disk4`. Replace it with the real
+device.
+
+```sh
+diskutil unmountDisk /dev/disk4
+sudo dd if=archlinux-x86_64.iso of=/dev/rdisk4 bs=4m
+diskutil eject /dev/disk4
+```
+
+While `dd` runs on macOS, press `Ctrl+T` to display progress.
+
+A macOS message saying the resulting disk is unreadable is normal for an Arch
+installer USB. Choose **Ignore**, not Initialize.
+
+## 5. Prepare fallbacks
+
+Have these available:
+
+- Wi-Fi password
+- Ethernet cable, when possible
+- a phone and USB cable for tethering
+- another computer or phone displaying this runbook
+- the LUKS recovery copy
+
+---
+
+# Part II: Unbox and prepare the firmware
+
+## 6. Optionally boot Windows once
+
+On a brand-new machine, boot Windows once if you want to use HP's supplied tools
+to install available BIOS or firmware updates before wiping the drive.
+
+Do not store anything in Windows that you need to keep.
+
+## 7. Enter HP firmware setup
+
+Common HP keys are:
+
+- `Esc`: Startup Menu
+- `F10`: firmware setup
+- `F9`: one-time boot menu
+
+Begin tapping `Esc` immediately after pressing the power button.
+
+## 8. Configure firmware
+
+Confirm or change these settings:
+
+- UEFI boot mode enabled
+- Legacy or CSM mode disabled
+- Fast Boot disabled
+- Secure Boot disabled for this unsigned systemd-boot installation
+
+Save the changes.
+
+Some HP systems display a confirmation code after disabling Secure Boot. Type
+the code displayed by the machine and press Enter.
+
+## 9. Boot the Arch USB
+
+Insert the USB, open the HP one-time boot menu, and select its UEFI entry.
+
+You should reach an Arch live shell as root.
+
+---
+
+# Part III: Live ISO checks
+
+## 10. Confirm UEFI mode
+
+Run:
 
 ```sh
 cat /sys/firmware/efi/fw_platform_size
 ```
 
-It must print `64`.
-
-For Wi-Fi:
+It must print:
 
 ```text
-iwctl
-[iwd]# device list
-[iwd]# station wlan0 scan
-[iwd]# station wlan0 get-networks
-[iwd]# station wlan0 connect "YourSSID"
-[iwd]# exit
+64
 ```
 
-Replace `wlan0` with the listed device. Verify connectivity and time:
+If the file is missing, stop and reboot the USB in UEFI mode.
+
+## 11. Set an easier console font when needed
+
+```sh
+setfont ter-132b
+```
+
+This is optional.
+
+## 12. Connect to the network
+
+### Ethernet
+
+Plug it in, wait a few seconds, then test:
 
 ```sh
 ping -c 3 archlinux.org
+```
+
+### Wi-Fi
+
+Start `iwctl`:
+
+```sh
+iwctl
+```
+
+Inside `iwctl`:
+
+```text
+device list
+station wlan0 scan
+station wlan0 get-networks
+station wlan0 connect "YourSSID"
+exit
+```
+
+Replace `wlan0` with the device name shown by `device list`.
+
+Test:
+
+```sh
+ping -c 3 archlinux.org
+```
+
+### Phone tethering fallback
+
+USB tethering normally appears as an Ethernet-style connection. Enable
+tethering on the phone, then test again.
+
+## 13. Confirm the clock
+
+```sh
 timedatectl
 ```
 
-## Phase 3: Disk destruction and LUKS2
+The live environment should show network time synchronization.
 
-Everything in this phase erases the selected disk. The examples assume an NVMe
-named `/dev/nvme0n1`. Stop and substitute the real device if `lsblk` shows a
-different name.
+---
+
+# Part IV: Destroy Windows and create the encrypted disk
+
+## 14. Identify the internal drive
+
+Run:
 
 ```sh
 lsblk -o NAME,SIZE,MODEL,TYPE,MOUNTPOINTS
 ```
 
-Partition the correct disk:
+This runbook uses these example names:
+
+```text
+Internal disk:       /dev/nvme0n1
+EFI partition:       /dev/nvme0n1p1
+Encrypted partition: /dev/nvme0n1p2
+```
+
+Your machine may use different names. Do not continue until the model and size
+identify the internal drive unambiguously.
+
+Everything after this point destroys the selected drive.
+
+## 15. Create a GPT with two partitions
+
+Open the correct disk:
 
 ```sh
 fdisk /dev/nvme0n1
 ```
 
-Create a new GPT and two partitions:
+Create:
 
-1. 1 GiB, EFI System
-2. Remaining space, Linux filesystem or Linux LUKS
+1. a new GPT
+2. partition 1, size `+1G`, type **EFI System**
+3. partition 2, all remaining space, type **Linux LUKS** or **Linux filesystem**
 
-Select partition types by the names displayed by the current `fdisk`, not by
-type numbers copied from an older guide. Use `p` to review the model, sizes, and
-partition table before `w`.
+A typical sequence is:
 
-Format only the EFI partition:
+```text
+g
+n
+1
+<Enter>
++1G
+t
+1
+n
+2
+<Enter>
+<Enter>
+t
+2
+```
+
+At the type prompt, list the available types and choose the entry named
+**Linux LUKS** when it is available. The numeric type code can change between
+versions, so select by the displayed name.
+
+Before writing:
+
+```text
+p
+```
+
+Verify:
+
+- partition 1 is approximately 1 GiB
+- partition 1 is EFI System
+- partition 2 occupies the rest of the drive
+- the disk model and total size are correct
+
+Then write:
+
+```text
+w
+```
+
+## 16. Format the EFI System Partition
 
 ```sh
 mkfs.fat -F 32 -n ESP /dev/nvme0n1p1
 ```
 
-Create the encrypted container on partition 2:
+## 17. Create the LUKS2 container
+
+Run:
 
 ```sh
 cryptsetup luksFormat \
@@ -158,209 +356,497 @@ cryptsetup luksFormat \
   /dev/nvme0n1p2
 ```
 
-This command is destructive. Type `YES` only after checking the device name.
-Enter the new LUKS passphrase twice.
+This command is destructive.
 
-Open it:
+Type uppercase `YES` only after rechecking that `/dev/nvme0n1p2` is the large
+second partition on the internal drive.
+
+Enter the LUKS passphrase twice.
+
+## 18. Open the encrypted container
 
 ```sh
 cryptsetup open /dev/nvme0n1p2 cryptroot
 cryptsetup status cryptroot
 ```
 
-Create btrfs inside the unlocked mapping:
+The decrypted device is now:
+
+```text
+/dev/mapper/cryptroot
+```
+
+## 19. Create btrfs
 
 ```sh
 mkfs.btrfs -L arch /dev/mapper/cryptroot
+```
 
+## 20. Create the btrfs subvolumes
+
+```sh
 mount /dev/mapper/cryptroot /mnt
+
 btrfs subvolume create /mnt/@
 btrfs subvolume create /mnt/@home
-umount /mnt
 
-mount -o subvol=@,compress=zstd,noatime /dev/mapper/cryptroot /mnt
+umount /mnt
+```
+
+## 21. Mount the target system
+
+```sh
+mount -o subvol=@,compress=zstd,noatime \
+  /dev/mapper/cryptroot /mnt
+
 mkdir -p /mnt/home /mnt/boot
+
 mount -o subvol=@home,compress=zstd,noatime \
   /dev/mapper/cryptroot /mnt/home
+
 mount /dev/nvme0n1p1 /mnt/boot
 ```
 
-There is no disk swap partition. zram is configured after first boot. This also
-means hibernation is not supported.
+Verify:
 
-## Phase 4: Base system
+```sh
+findmnt /mnt
+findmnt /mnt/home
+findmnt /mnt/boot
+lsblk -f
+```
 
-`cryptsetup` must be installed in the target system and included in the
-initramfs.
+Expected structure:
+
+- `/mnt` is btrfs through `/dev/mapper/cryptroot`, subvolume `@`
+- `/mnt/home` is the same encrypted btrfs filesystem, subvolume `@home`
+- `/mnt/boot` is the FAT32 EFI partition
+- there is no swap partition
+
+---
+
+# Part V: Install the base system
+
+## 22. Install the minimum bootable system
 
 ```sh
 pacstrap -K /mnt \
-  base linux linux-firmware amd-ucode \
-  btrfs-progs cryptsetup \
-  networkmanager fish neovim sudo man-db man-pages curl git
+  base \
+  linux \
+  linux-firmware \
+  amd-ucode \
+  btrfs-progs \
+  cryptsetup \
+  networkmanager \
+  fish \
+  neovim \
+  sudo \
+  man-db \
+  man-pages \
+  git \
+  curl
+```
 
+## 23. Generate and inspect `fstab`
+
+```sh
 genfstab -U /mnt > /mnt/etc/fstab
 cat /mnt/etc/fstab
 ```
 
-Verify entries for `/`, `/home`, and `/boot`. The btrfs lines should show
-`subvol=/@` and `subvol=/@home`. There should be no disk-swap line.
+Verify:
 
-## Phase 5: Chroot, encrypted initramfs, and bootloader
+- `/` uses `subvol=/@`
+- `/home` uses `subvol=/@home`
+- both btrfs entries include `compress=zstd` and `noatime`
+- `/boot` is the EFI partition
+- there is no disk-swap entry
+
+Do not continue if the mount targets are wrong.
+
+---
+
+# Part VI: Configure the installed system
+
+## 24. Enter the chroot
 
 ```sh
 arch-chroot /mnt
 ```
 
-Time and locale:
+Everything until the explicit `exit` command now operates inside the installed
+system.
+
+## 25. Configure time
 
 ```sh
 ln -sf /usr/share/zoneinfo/America/Toronto /etc/localtime
 hwclock --systohc
+```
+
+## 26. Configure locale
+
+```sh
 sed -i 's/^#en_CA.UTF-8 UTF-8/en_CA.UTF-8 UTF-8/' /etc/locale.gen
 sed -i 's/^#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+
 locale-gen
+
 printf 'LANG=en_CA.UTF-8\n' > /etc/locale.conf
 printf 'KEYMAP=us\n' > /etc/vconsole.conf
 ```
 
-Hostname and hosts:
+## 27. Configure hostname
 
 ```sh
 printf 'momiji\n' > /etc/hostname
-curl -fL -o /etc/hosts \
-  https://raw.githubusercontent.com/NoahWLono/momiji-dots/main/etc/hosts
-cat /etc/hosts
 ```
 
-Services:
+## 28. Create the human account
 
-```sh
-systemctl enable NetworkManager.service systemd-timesyncd.service
-```
-
-Accounts:
+Set the root recovery password:
 
 ```sh
 passwd
-useradd -m -G wheel -s /usr/bin/fish noah
-passwd noah
-EDITOR=nvim visudo
 ```
 
-In `visudo`, uncomment:
-
-```text
-%wheel ALL=(ALL:ALL) ALL
-```
-
-Install the mkinitcpio drop-in:
+Create the one human user:
 
 ```sh
-install -d /etc/mkinitcpio.conf.d
-curl -fL \
-  -o /etc/mkinitcpio.conf.d/momiji-encryption.conf \
-  https://raw.githubusercontent.com/NoahWLono/momiji-dots/main/etc/mkinitcpio.conf.d/momiji-encryption.conf
+useradd -m -G wheel -s /usr/bin/fish noah
+passwd noah
+```
+
+Grant the wheel group normal password-protected `sudo` access:
+
+```sh
+install -d -m 0750 /etc/sudoers.d
+
+printf '%%wheel ALL=(ALL:ALL) ALL\n' \
+  > /etc/sudoers.d/10-wheel
+
+chmod 440 /etc/sudoers.d/10-wheel
+visudo -cf /etc/sudoers.d/10-wheel
+```
+
+The final command must report that the file parsed successfully.
+
+## 29. Clone the exact repository branch as `noah`
+
+```sh
+runuser -u noah -- git clone \
+  --branch cleanup/arch-preflight \
+  --single-branch \
+  https://github.com/NoahWLono/momiji-dots.git \
+  /home/noah/momiji-dots
+```
+
+Verify the branch:
+
+```sh
+runuser -u noah -- git \
+  -C /home/noah/momiji-dots \
+  branch --show-current
+```
+
+It must print:
+
+```text
+cleanup/arch-preflight
+```
+
+## 30. Install the repository-owned hosts file
+
+```sh
+install -Dm644 \
+  /home/noah/momiji-dots/etc/hosts \
+  /etc/hosts
+
+cat /etc/hosts
+```
+
+## 31. Enable first-boot services
+
+```sh
+systemctl enable NetworkManager.service
+systemctl enable systemd-timesyncd.service
+```
+
+## 32. Validate the cloned repository
+
+```sh
+runuser -u noah -- bash -lc \
+  'cd /home/noah/momiji-dots && ./scripts/validate-repo.sh'
+```
+
+At this early stage, a missing Lua parser may produce a warning. There must be
+zero failures.
+
+Do not run `scripts/preflight.sh`.
+
+## 33. Install the encrypted initramfs configuration
+
+```sh
+install -Dm644 \
+  /home/noah/momiji-dots/etc/mkinitcpio.conf.d/momiji-encryption.conf \
+  /etc/mkinitcpio.conf.d/momiji-encryption.conf
 
 cat /etc/mkinitcpio.conf.d/momiji-encryption.conf
+```
+
+The `HOOKS` line must include this order:
+
+```text
+systemd ... block sd-encrypt filesystems
+```
+
+Generate the initramfs:
+
+```sh
 mkinitcpio -P
 ```
 
-The hook list must contain `systemd`, `sd-vconsole`, and `sd-encrypt`, with
-`sd-encrypt` before `filesystems`.
+This must complete without an error.
 
-Install systemd-boot and generate the loader entry from the LUKS UUID:
+## 34. Install systemd-boot
 
 ```sh
 bootctl install
 install -d /boot/loader/entries
-
-curl -fL -o /boot/loader/loader.conf \
-  https://raw.githubusercontent.com/NoahWLono/momiji-dots/main/boot/loader.conf
-
-LUKS_UUID=$(cryptsetup luksUUID /dev/nvme0n1p2)
-test -n "$LUKS_UUID"
-
-curl -fL -o /tmp/arch.conf.template \
-  https://raw.githubusercontent.com/NoahWLono/momiji-dots/main/boot/arch.conf.template
-
-sed "s/LUKS_UUID_PLACEHOLDER/$LUKS_UUID/" \
-  /tmp/arch.conf.template \
-  > /boot/loader/entries/arch.conf
-
-rm /tmp/arch.conf.template
-
-grep -F "rd.luks.name=$LUKS_UUID=cryptroot" \
-  /boot/loader/entries/arch.conf
-grep -F 'root=/dev/mapper/cryptroot' \
-  /boot/loader/entries/arch.conf
-cat /boot/loader/entries/arch.conf
-bootctl list
 ```
 
-The UUID here is the LUKS container UUID from partition 2. It is not the btrfs
-filesystem UUID and not the EFI partition UUID.
+Install the repository's loader configuration:
 
-Leave and reboot:
+```sh
+install -Dm644 \
+  /home/noah/momiji-dots/boot/loader.conf \
+  /boot/loader/loader.conf
+```
+
+## 35. Generate the encrypted Arch boot entry
+
+Get the LUKS container UUID:
+
+```sh
+LUKS_UUID=$(cryptsetup luksUUID /dev/nvme0n1p2)
+test -n "$LUKS_UUID"
+printf '%s\n' "$LUKS_UUID"
+```
+
+Substitute it into the repository template:
+
+```sh
+sed "s/LUKS_UUID_PLACEHOLDER/$LUKS_UUID/" \
+  /home/noah/momiji-dots/boot/arch.conf.template \
+  > /boot/loader/entries/arch.conf
+```
+
+Inspect it:
+
+```sh
+cat /boot/loader/entries/arch.conf
+```
+
+It must contain:
+
+```text
+rd.luks.name=<the-LUKS-UUID>=cryptroot
+root=/dev/mapper/cryptroot
+rootflags=subvol=@
+```
+
+Verify automatically:
+
+```sh
+grep -F "rd.luks.name=$LUKS_UUID=cryptroot" \
+  /boot/loader/entries/arch.conf
+
+grep -F 'root=/dev/mapper/cryptroot' \
+  /boot/loader/entries/arch.conf
+
+grep -F 'rootflags=subvol=@' \
+  /boot/loader/entries/arch.conf
+```
+
+## 36. Perform final chroot checks
+
+```sh
+ls -lh \
+  /boot/vmlinuz-linux \
+  /boot/initramfs-linux.img \
+  /boot/loader/loader.conf \
+  /boot/loader/entries/arch.conf
+
+bootctl list
+systemctl is-enabled NetworkManager.service
+systemctl is-enabled systemd-timesyncd.service
+```
+
+Both services should report `enabled`.
+
+## 37. Leave the chroot and reboot
 
 ```sh
 exit
+```
+
+Back in the live ISO:
+
+```sh
+sync
 umount -R /mnt
 cryptsetup close cryptroot
 reboot
 ```
 
-Remove the USB when firmware starts again.
+Remove the installer USB when the machine begins rebooting.
 
-## Phase 6: First encrypted boot
+---
 
-The first prompt after systemd-boot is the LUKS passphrase. A correct passphrase
-unlocks the root filesystem. At this stage SDDM is not enabled yet, so the
-machine reaches a tty login.
+# Part VII: First encrypted boot
 
-Log in as `noah`. Connect Wi-Fi if needed:
+## 38. Unlock the disk
+
+systemd-boot starts the encrypted Arch entry.
+
+Enter the LUKS passphrase when prompted.
+
+This first boot intentionally ends at a text login. SDDM is installed and
+enabled later, after Hyprland and Caelestia have been tested.
+
+## 39. Log in as `noah`
+
+At the tty prompt:
+
+```text
+login: noah
+password: <the noah account password>
+```
+
+## 40. Connect Wi-Fi through NetworkManager
 
 ```sh
-nmcli device wifi connect "YourSSID" password "yourpassword"
+nmcli device wifi list
+
+nmcli device wifi connect \
+  "YourSSID" \
+  password "yourpassword"
+
 ping -c 3 archlinux.org
 ```
 
-Clone and validate the exact payload:
+## 41. Confirm the repository and branch
 
 ```sh
-git clone https://github.com/NoahWLono/momiji-dots.git ~/momiji-dots
 cd ~/momiji-dots
-./scripts/validate-repo.sh
+
+git status --short
+git branch --show-current
+git log -1 --oneline
 ```
 
-Install packages, paru, applications, zram, and services:
+Expected branch:
+
+```text
+cleanup/arch-preflight
+```
+
+## 42. Update the base system
 
 ```sh
+sudo pacman -Syu
+```
+
+Never use:
+
+```text
+pacman -Sy <package>
+```
+
+## 43. Run the Arch-aware repository validation
+
+```sh
+cd ~/momiji-dots
+./scripts/validate-repo.sh --arch --aur
+```
+
+Stop if this reports any failure. A package name may have changed since the
+branch was published, and that must be corrected before running the installer.
+
+## 44. Install the repository package payload
+
+```sh
+cd ~/momiji-dots
 ./scripts/install-packages.sh
 ```
 
-## Phase 7: Caelestia
+This script:
 
-Install the stable CLI package and launch its installer:
+- installs the official repository package list
+- bootstraps `paru-bin` when `paru` is absent
+- installs the AUR application list
+- installs the repository zram configuration
+- enables Bluetooth and power-profile services
+- enables periodic SSD trimming
+
+When prompted by `makepkg` or `paru`, inspect the package details before
+continuing.
+
+## 45. Verify the package stage
+
+```sh
+command -v Hyprland
+command -v paru
+command -v sddm
+
+systemctl is-enabled bluetooth.service
+systemctl is-enabled power-profiles-daemon.service
+systemctl is-enabled fstrim.timer
+```
+
+SDDM is installed but is not enabled yet.
+
+---
+
+# Part VIII: Install Caelestia
+
+## 46. Install the stable Caelestia CLI
 
 ```sh
 paru -S --needed caelestia-cli
+```
+
+## 47. Run the Caelestia installer
+
+```sh
 caelestia install --aur-helper paru
 ```
 
-Deploy the repository-owned overrides and assets:
+Use the default components unless you have a specific reason to change them.
+
+Optional components may include Spotify, VS Code, VSCodium, Zed, Discord,
+Todoist, uwsm, and others. Choose only the applications you intend to use.
+
+For an editor, choose either VS Code or VSCodium unless you deliberately want
+both.
+
+Allow the installation to finish completely. Some components compile software
+and can take a while on the laptop.
+
+## 48. Confirm Caelestia created its configuration
 
 ```sh
-cd ~/momiji-dots
-./scripts/deploy-configs.sh
+test -f ~/.config/hypr/hyprland.lua
+test -f ~/.config/caelestia/hypr-vars.lua
 ```
 
-Current Caelestia uses:
+Both commands must return silently with status zero.
 
-- `~/.config/caelestia/hypr-vars.lua`
-- `~/.config/caelestia/hypr-user.lua`
+---
 
-## Phase 8: Test Hyprland before enabling the login manager
+# Part IX: Test Hyprland before enabling SDDM
+
+## 49. Start Hyprland manually
 
 From the tty:
 
@@ -368,7 +854,45 @@ From the tty:
 Hyprland
 ```
 
-Inside a terminal, run:
+A manual launch is the safety gate. Do not enable SDDM until this works.
+
+## 50. Open a terminal
+
+Use:
+
+```text
+Super+T
+```
+
+Inside the terminal, deploy the repository configuration:
+
+```sh
+cd ~/momiji-dots
+./scripts/deploy-configs.sh
+```
+
+Because this runs inside Hyprland, the script can also apply the Maple wallpaper
+and dynamic colour scheme.
+
+## 51. Restart the Caelestia shell after deployment
+
+Use:
+
+```text
+Ctrl+Super+Alt+R
+```
+
+Or run:
+
+```sh
+caelestia shell -k
+sleep 1
+caelestia shell -d
+```
+
+## 52. Test the desktop
+
+Run:
 
 ```sh
 hyprctl monitors
@@ -377,161 +901,362 @@ nmcli general status
 caelestia scheme get
 ```
 
-Acceptance criteria:
+Test these interactions:
 
-- the shell, launcher, terminal, and Firefox keybind work
-- Maple is the wallpaper and the dynamic colour scheme is active
-- audio output is listed
-- the lock screen opens with `Super+L`
-- no red Lua error is printed by Hyprland
+- `Super`: launcher
+- `Super+T`: terminal
+- `Super+W`: Firefox
+- `Super+E`: file manager
+- `Super+L`: lock screen
+- `Super+1`, `Super+2`: workspace switching
+- volume keys
+- brightness keys
+- Wi-Fi panel
+- Bluetooth panel
+- notification panel
 
-Exit:
+Confirm:
+
+- Maple is the wallpaper
+- Caelestia is visible
+- the dynamic colour scheme is active
+- audio output appears in `wpctl status`
+- an audio input appears, or the microphone troubleshooting section applies
+- no red Lua configuration error appears
+- locking requires the `noah` password
+
+## 53. Exit the manual session
+
+From a terminal:
 
 ```sh
 hyprctl dispatch exit
 ```
 
-## Phase 9: Enable the normal graphical login
+You should return to the tty.
 
-Only after the manual session test succeeds:
+---
+
+# Part X: Enable the normal graphical login
+
+## 54. Enable SDDM using the repository script
 
 ```sh
 cd ~/momiji-dots
 ./scripts/enable-display-manager.sh
+```
+
+The script:
+
+- installs the repository SDDM configuration
+- removes remnants of the old tty autologin design
+- sets `graphical.target`
+- enables `sddm.service`
+- keeps autologin disabled
+
+Verify:
+
+```sh
+systemctl is-enabled sddm.service
+systemctl get-default
+```
+
+Expected:
+
+```text
+enabled
+graphical.target
+```
+
+## 55. Reboot into the final login flow
+
+```sh
 reboot
 ```
 
-The next boot sequence is:
+The sequence should now be:
 
 1. systemd-boot
 2. LUKS passphrase
 3. SDDM graphical login
 
-At the first SDDM screen, select the `Hyprland` session and sign in as `noah`.
-SDDM remembers the last user and session. Autologin is explicitly disabled.
+At the first SDDM screen:
 
-After login, verify zram:
+1. select the **Hyprland** session
+2. select or enter user `noah`
+3. enter the `noah` password
+
+SDDM should remember the last user and session, but it must continue asking for
+the password.
+
+---
+
+# Part XI: Final acceptance tests
+
+## 56. Verify encryption and mounts
+
+After logging in:
+
+```sh
+lsblk -f
+findmnt /
+findmnt /home
+findmnt /boot
+```
+
+Expected:
+
+- `/` and `/home` originate through `/dev/mapper/cryptroot`
+- `/boot` is the unencrypted FAT32 EFI partition
+- no personal data partition is mounted outside LUKS
+
+## 57. Verify zram
 
 ```sh
 swapon --show
 zramctl
 ```
 
-The swap device should be `/dev/zram0`, not an NVMe partition or file.
+Expected swap device:
 
-Test suspend and resume with disposable work open. The existing session should
-return locked. If the session resumes unlocked, use `Super+L` before closing the
-lid until the Caelestia idle and lock configuration has been corrected.
+```text
+/dev/zram0
+```
 
-## Phase 10: Baseline protections
+There should be no NVMe swap partition or swapfile.
 
-Firewall:
+## 58. Verify the graphical login service
+
+```sh
+systemctl status sddm.service
+```
+
+It should be active.
+
+## 59. Verify network, audio, and power services
+
+```sh
+systemctl status NetworkManager.service
+systemctl status bluetooth.service
+systemctl status power-profiles-daemon.service
+
+wpctl status
+powerprofilesctl
+```
+
+## 60. Test lock, suspend, and resume
+
+First test the lock screen:
+
+```text
+Super+L
+```
+
+Then test suspend with disposable work open:
+
+```sh
+systemctl suspend
+```
+
+Wake the laptop.
+
+The session should return locked. If it resumes unlocked, manually lock before
+closing the lid until the idle and lock configuration is corrected.
+
+This layout intentionally does not support hibernation.
+
+---
+
+# Part XII: Finish security and recovery setup
+
+## 61. Enable the firewall
 
 ```sh
 sudo pacman -S --needed ufw
+
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw enable
+
 sudo systemctl enable ufw.service
+sudo ufw status verbose
 ```
 
-Snapshots:
+## 62. Create the baseline root snapshot
 
 ```sh
 sudo pacman -S --needed snapper snap-pac
+
 sudo snapper -c root create-config /
-sudo snapper -c root create -d "baseline encrypted clean install"
+sudo snapper -c root create \
+  -d "baseline encrypted Momiji install"
+
+sudo snapper -c root list
 ```
 
-The root snapshot does not include the separate `@home` subvolume and is not a
-backup.
+The root snapshot does not include the separate `@home` subvolume.
 
-LUKS header backup:
+Snapshots are not backups.
+
+## 63. Back up the LUKS header
+
+Connect trusted external storage and identify its mounted path.
+
+Then run, replacing the destination path:
 
 ```sh
-sudo cryptsetup luksHeaderBackup /dev/nvme0n1p2 \
-  --header-backup-file /path/on/external-media/momiji-luks-header.img
+sudo cryptsetup luksHeaderBackup \
+  /dev/nvme0n1p2 \
+  --header-backup-file \
+  /path/on/external-media/momiji-luks-header.img
 ```
 
-Store that file on separate trusted media. Never commit it, email it, or leave
-the only copy on the encrypted laptop. A header backup does not replace the
-passphrase.
+Store the header backup away from the laptop.
 
-Sensors:
+Never commit it to Git, upload it publicly, or keep its only copy on the
+encrypted drive.
+
+## 64. Start a system journal
 
 ```sh
-sudo sensors-detect
-sensors
+mkdir -p ~/notes
+
+cat >> ~/notes/journal.md <<'EOF'
+# Momiji system journal
+
+- Installed from cleanup/arch-preflight
+- LUKS2 root and home
+- btrfs @ and @home
+- zram swap
+- SDDM login
+- Hyprland and Caelestia
+EOF
 ```
 
-Write every deviation to `~/notes/journal.md`.
+Record every non-obvious configuration change and every rollback.
 
-## Optional extras
+## 65. Run the final repository validation
+
+```sh
+cd ~/momiji-dots
+
+./scripts/validate-repo.sh --arch --aur
+git status
+```
+
+The validator must report zero failures.
+
+---
+
+# Part XIII: Optional applications and rice
+
+## 66. Install the optional terminal extras
 
 ```sh
 ~/momiji-dots/scripts/install-fun.sh
 ```
 
-The custom Clock pony is optional. Open-ended cursor, sound, and plugin work is
-in `rice/RICING.md`.
+This is deliberately separate from the boot-critical installation.
 
-## Proton VPN through WireGuard
-
-Keep the downloaded private configuration out of Git:
+## 67. Test the optional Maple fastfetch configuration
 
 ```sh
-nmcli connection import type wireguard file ~/Downloads/proton.conf
+fastfetch \
+  --config \
+  ~/momiji-dots/rice/fastfetch/config-maple.jsonc
+```
+
+Only replace Caelestia's fastfetch configuration if you prefer the result.
+
+## 68. Understand the optional pony greeting
+
+The Fish greeting works without the custom Clock pony. When the optional pony
+file is absent, ponysay uses its normal roster.
+
+See:
+
+```text
+~/momiji-dots/rice/ponies/README.md
+```
+
+## 69. Configure Proton VPN through WireGuard
+
+Generate a WireGuard configuration in the Proton account dashboard.
+
+Keep the downloaded private configuration out of Git.
+
+Import it:
+
+```sh
+nmcli connection import \
+  type wireguard \
+  file ~/Downloads/proton.conf
+
 nmcli connection show
-nmcli connection up proton
 ```
 
-Use the imported connection name printed by NetworkManager.
-
-## Microphone troubleshooting
+Bring it up using the actual imported connection name:
 
 ```sh
-wpctl status
-arecord -d 3 /tmp/mic-test.wav
-aplay /tmp/mic-test.wav
-dmesg | grep -iE 'sof|acp|audio'
+nmcli connection up "<connection-name>"
 ```
 
-`alsa-utils` and `sof-firmware` are in `packages.txt`.
+## 70. Defer experimental rice until after the baseline
 
-## Wi-Fi troubleshooting
+Read:
 
-Deploy these only for matching rtw89 symptoms:
-
-```sh
-sudo install -Dm644 ~/momiji-dots/etc/wifi-powersave.conf \
-  /etc/NetworkManager/conf.d/wifi-powersave.conf
-sudo systemctl restart NetworkManager
+```text
+~/momiji-dots/rice/RICING.md
 ```
 
-Before installing the driver option:
+That file covers optional work such as:
 
-```sh
-modinfo rtw89_pci | grep -E 'disable_aspm_l1|disable_clkreq'
-```
+- paw cursor
+- lid sounds
+- dynamic cursor plugin
+- animation tuning
+- window rules
+- workspace startup
+- personal keybindings
 
-Then, only if both parameters are supported:
+Make one change at a time and record it in the journal.
 
-```sh
-sudo install -Dm644 ~/momiji-dots/etc/rtw89.conf \
-  /etc/modprobe.d/rtw89.conf
-sudo reboot
-```
+---
 
-## Recovery
+# Troubleshooting
 
-### LUKS password is accepted, but root does not mount
+## The Arch USB does not boot
 
-Boot the Arch ISO, connect the network, then:
+Check:
+
+- Secure Boot is disabled
+- the USB was written to the correct whole device
+- the UEFI USB entry was selected
+- the ISO was not merely copied as a file onto a normal FAT volume
+
+## The LUKS passphrase is rejected
+
+Check:
+
+- Caps Lock
+- keyboard layout
+- whether the passphrase contains a layout-dependent symbol
+- whether you are typing the LUKS passphrase rather than the `noah` password
+
+## The passphrase is accepted but root does not mount
+
+Boot the Arch ISO and connect the network.
+
+Open and mount the encrypted system:
 
 ```sh
 cryptsetup open /dev/nvme0n1p2 cryptroot
-mount -o subvol=@ /dev/mapper/cryptroot /mnt
+
+mount -o subvol=@ \
+  /dev/mapper/cryptroot /mnt
+
 mount /dev/nvme0n1p1 /mnt/boot
+
 arch-chroot /mnt
 ```
 
@@ -540,23 +1265,158 @@ Inspect:
 ```sh
 cat /etc/mkinitcpio.conf.d/momiji-encryption.conf
 cat /boot/loader/entries/arch.conf
+
 cryptsetup luksUUID /dev/nvme0n1p2
 mkinitcpio -P
 ```
 
-### SDDM fails
+The UUID printed by `cryptsetup luksUUID` must match the UUID in
+`rd.luks.name=`.
 
-Switch to a tty with `Ctrl+Alt+F2`, sign in, and run:
+## SDDM does not appear
+
+Switch to tty2:
+
+```text
+Ctrl+Alt+F2
+```
+
+Log in as `noah`.
+
+Check:
+
+```sh
+systemctl status sddm.service
+journalctl -b -u sddm.service
+```
+
+Temporarily disable it:
 
 ```sh
 sudo systemctl disable --now sddm.service
 sudo systemctl set-default multi-user.target
 ```
 
-Fix the graphical session, test `Hyprland` manually, then re-run
-`scripts/enable-display-manager.sh`.
+Test manually:
 
-## Update routine
+```sh
+Hyprland
+```
+
+After fixing the issue:
+
+```sh
+cd ~/momiji-dots
+./scripts/enable-display-manager.sh
+reboot
+```
+
+## Hyprland starts but Caelestia does not
+
+Inside Hyprland:
+
+```sh
+caelestia shell -l
+caelestia shell -k
+sleep 1
+caelestia shell -d
+```
+
+Reapply repository configuration:
+
+```sh
+cd ~/momiji-dots
+./scripts/deploy-configs.sh
+```
+
+## Wi-Fi is unreliable
+
+Do not install driver workarounds preemptively.
+
+First inspect:
+
+```sh
+dmesg | grep -i rtw89
+journalctl -k -b | grep -i rtw89
+```
+
+Disable NetworkManager Wi-Fi power saving only when symptoms match:
+
+```sh
+sudo install -Dm644 \
+  ~/momiji-dots/etc/wifi-powersave.conf \
+  /etc/NetworkManager/conf.d/wifi-powersave.conf
+
+sudo systemctl restart NetworkManager
+```
+
+Before using the driver option, verify the running module supports the named
+parameters:
+
+```sh
+modinfo rtw89_pci |
+  grep -E 'disable_aspm_l1|disable_clkreq'
+```
+
+Then, only when both parameters exist:
+
+```sh
+sudo install -Dm644 \
+  ~/momiji-dots/etc/rtw89.conf \
+  /etc/modprobe.d/rtw89.conf
+
+sudo reboot
+```
+
+## The microphone is missing
+
+```sh
+wpctl status
+
+arecord -d 3 /tmp/mic-test.wav
+aplay /tmp/mic-test.wav
+
+dmesg | grep -iE 'sof|acp|audio'
+```
+
+Confirm:
+
+```sh
+pacman -Q sof-firmware alsa-utils
+```
+
+Do not edit PipeWire configuration before confirming that the hardware driver
+and firmware are present.
+
+## zram is missing after the final reboot
+
+```sh
+cat /etc/systemd/zram-generator.conf
+systemctl daemon-reload
+systemctl list-units 'dev-zram*.swap'
+zramctl
+```
+
+The repository source is:
+
+```text
+~/momiji-dots/etc/zram-generator.conf
+```
+
+Reinstall it when necessary:
+
+```sh
+sudo install -Dm644 \
+  ~/momiji-dots/etc/zram-generator.conf \
+  /etc/systemd/zram-generator.conf
+
+sudo systemctl daemon-reload
+sudo reboot
+```
+
+---
+
+# Normal update routine
 
 Use:
 
@@ -564,9 +1424,58 @@ Use:
 caelestia update
 ```
 
-Never run `pacman -Sy <package>`. Before a future reinstall:
+For ordinary package work, use:
+
+```sh
+paru
+```
+
+Never create a partial upgrade with:
+
+```text
+pacman -Sy <package>
+```
+
+Before any future reinstall:
 
 ```sh
 cd ~/momiji-dots
+git switch cleanup/arch-preflight
+git pull --ff-only
+
 ./scripts/validate-repo.sh --arch --aur
 ```
+
+If the branch has been merged into `main`, update this runbook and every clone
+command deliberately. Do not silently switch branches during an installation.
+
+---
+
+# Final done state
+
+The machine is complete when all of the following are true:
+
+- [ ] the internal data partition is LUKS2 encrypted
+- [ ] `/` uses btrfs subvolume `@`
+- [ ] `/home` uses btrfs subvolume `@home`
+- [ ] `/boot` is the 1 GiB EFI System Partition
+- [ ] the machine asks for the LUKS passphrase at boot
+- [ ] SDDM shows a normal graphical login screen
+- [ ] SDDM does not autologin
+- [ ] `noah` can log into the Hyprland session
+- [ ] Caelestia starts correctly
+- [ ] Maple is applied as the wallpaper
+- [ ] dynamic colours work
+- [ ] networking works
+- [ ] audio output works
+- [ ] microphone input has been tested
+- [ ] zram appears as `/dev/zram0`
+- [ ] the firewall is enabled
+- [ ] a baseline root snapshot exists
+- [ ] a LUKS header backup exists on separate trusted media
+- [ ] `./scripts/validate-repo.sh --arch --aur` reports zero failures
+- [ ] every deviation is recorded in `~/notes/journal.md`
+
+At that point, the laptop has moved from sealed box to an encrypted Momiji
+desktop with a normal login page. Experimental ricing can begin from a known,
+documented, recoverable baseline.
