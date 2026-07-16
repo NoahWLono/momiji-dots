@@ -1,9 +1,8 @@
-# Pony fortune on new terminals. Coin flip between Clockwork Relativity
-# and the canon cast once his .pony exists; silently no-ops until
-# ponysay and fortune are installed, so it is safe to deploy early.
+# Optional pony fortune in new interactive terminals. The custom Clock pony is
+# optional. If it is not installed, ponysay falls back to its normal roster.
 if status is-interactive; and command -q ponysay; and command -q fortune
-    set -l clock ~/momiji-dots/rice/ponies/clockwork-relativity.pony
-    if test -e $clock; and test (random 0 1) -eq 0
+    set -l clock ~/.local/share/momiji/ponies/clockwork-relativity.pony
+    if test -r $clock; and test (random 0 1) -eq 0
         fortune -s | ponysay -f $clock
     else
         fortune -s | ponysay

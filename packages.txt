@@ -24,6 +24,7 @@ pipewire-jack
 wireplumber
 pavucontrol
 playerctl
+alsa-utils
 networkmanager
 network-manager-applet
 bluez
@@ -53,6 +54,9 @@ fastfetch
 btop
 thunar
 firefox
+libreoffice-fresh
+hunspell
+wireguard-tools
 wl-clipboard
 cliphist
 grim
@@ -70,4 +74,8 @@ jq
 lazygit
 base-devel
 git
+curl
 usbutils
+cryptsetup
+sddm
+zram-generator

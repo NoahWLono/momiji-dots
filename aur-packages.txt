@@ -1,0 +1,2 @@
+# Installed after paru is available. Keep one package per line.
+obsidian
