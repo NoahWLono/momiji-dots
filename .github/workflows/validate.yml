@@ -12,7 +12,7 @@ jobs:
   repository-lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install parsers
         run: |
           sudo apt-get update
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     container: archlinux:base
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Update the disposable Arch container
         run: pacman -Syu --noconfirm
       - name: Resolve official package list
