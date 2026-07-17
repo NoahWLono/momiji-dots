@@ -1,5 +1,4 @@
 mesa
-libva-mesa-driver
 vulkan-radeon
 vulkan-icd-loader
 vulkan-tools
@@ -60,7 +59,7 @@ thunar-archive-plugin
 tumbler
 xarchiver
 unzip
-p7zip
+7zip
 imv
 mpv
 zathura

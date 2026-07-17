@@ -101,16 +101,16 @@ while IFS= read -r pkg; do
     repo_packages[${#repo_packages[@]}]=$pkg
 done < <(list_packages "$ROOT/packages.txt")
 
-if ((${#repo_packages[@]} == 96)); then
-    pass "packages.txt contains 96 package entries"
+if ((${#repo_packages[@]} == 95)); then
+    pass "packages.txt contains 95 package entries"
 else
-    fail "packages.txt contains ${#repo_packages[@]} entries, expected 96"
+    fail "packages.txt contains ${#repo_packages[@]} entries, expected 95"
 fi
 
 for required_pkg in \
     curl git openssh alsa-utils libreoffice-fresh hunspell hunspell-en_ca \
     wireguard-tools cryptsetup sddm zram-generator dosfstools \
-    libva-mesa-driver hyprpolkitagent obsidian; do
+    mesa hyprpolkitagent obsidian; do
     if ! printf '%s\n' "${repo_packages[@]}" | grep -Fxq "$required_pkg"; then
         fail "packages.txt is missing required package: $required_pkg"
     fi
