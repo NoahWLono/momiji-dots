@@ -2,14 +2,14 @@
 
 This is the complete install list for one human user, `noah`.
 
-It uses this exact repository branch:
+It uses this repository's `main` branch:
 
 ```text
-https://github.com/NoahWLono/momiji-dots/tree/cleanup/arch-preflight
+https://github.com/NoahWLono/momiji-dots
 ```
 
-Until that branch is merged, every clone command in this runbook explicitly
-selects `cleanup/arch-preflight`. Do not substitute `main`.
+Every clone command in this runbook selects `main` explicitly. Do not
+silently switch branches during an installation.
 
 ## What the finished machine will use
 
@@ -38,14 +38,15 @@ The LUKS passphrase and the `noah` account password are separate credentials.
 
 # Part I: Before the laptop arrives
 
-## 1. Finish and publish the repository branch
+## 1. Confirm the repository is current and validated
 
 On the Mac that contains the repository:
 
 ```sh
 cd ~/momiji-dots
 
-git switch cleanup/arch-preflight
+git switch main
+git pull --ff-only
 ./scripts/validate-repo.sh
 git diff --check
 git status
@@ -55,32 +56,15 @@ The acceptable result is:
 
 - `Validation complete: 0 failure(s), ...`
 - `git diff --check` prints nothing
+- a clean `git status`
 - any Fish or Lua parser messages are warnings only when those parsers are not installed on macOS
-
-Do not use `scripts/preflight.sh` for this installation. The canonical check is:
-
-```sh
-./scripts/validate-repo.sh
-```
 
 Publish any remaining changes:
 
 ```sh
 git add -A
 git commit -m "finalize encrypted Arch install runbook"
-git push -u origin cleanup/arch-preflight
-```
-
-Confirm the branch is visible:
-
-```sh
-git ls-remote --heads origin cleanup/arch-preflight
-```
-
-It must print a commit hash and:
-
-```text
-refs/heads/cleanup/arch-preflight
+git push
 ```
 
 ## 2. Prepare passwords before install day
@@ -211,6 +195,20 @@ This is optional.
 
 ## 12. Connect to the network
 
+### Identify the Wi-Fi hardware first
+
+Record which wireless chip this specific unit shipped with:
+
+```sh
+lspci -knn | grep -iA3 net
+```
+
+Note the chip and the `Kernel driver in use` line for the install journal.
+HP ships the 255 G10 with different cards by batch: Realtek 8852 family
+(driver `rtw89`), Realtek RTL8822CE (driver `rtw88`), or MediaTek MT7921
+(driver `mt7921e`). The repository's `etc/rtw89.conf` applies only to the
+first group.
+
 ### Ethernet
 
 Plug it in, wait a few seconds, then test:
@@ -285,58 +283,39 @@ Everything after this point destroys the selected drive.
 
 ## 15. Create a GPT with two partitions
 
-Open the correct disk:
+`sgdisk` is on the live ISO, is scriptable, and makes every value explicit.
+The old interactive `fdisk` sequence depended on fdisk auto-selecting the
+sole partition, which made one keystroke a type code and a later identical
+keystroke a partition number. That ambiguity is gone here.
+
+Destroy every existing partition structure, then create both partitions:
 
 ```sh
-fdisk /dev/nvme0n1
+sgdisk --zap-all /dev/nvme0n1
+
+sgdisk -n1:0:+1G -t1:ef00 -c1:ESP /dev/nvme0n1
+sgdisk -n2:0:0   -t2:8309 -c2:cryptroot /dev/nvme0n1
 ```
 
-Create:
+What each flag does:
 
-1. a new GPT
-2. partition 1, size `+1G`, type **EFI System**
-3. partition 2, all remaining space, type **Linux LUKS** or **Linux filesystem**
+- `--zap-all` wipes GPT and MBR structures on the whole disk
+- `-n1:0:+1G` creates partition 1, 1 GiB, at the default start
+- `-t1:ef00` sets partition 1 to type EFI System
+- `-n2:0:0` creates partition 2 across all remaining space
+- `-t2:8309` sets partition 2 to type Linux LUKS
+- `-c` names are cosmetic labels
 
-A typical sequence is:
+Verify before continuing:
 
-```text
-g
-n
-1
-<Enter>
-+1G
-t
-1
-n
-2
-<Enter>
-<Enter>
-t
-2
+```sh
+sgdisk -p /dev/nvme0n1
+lsblk /dev/nvme0n1
 ```
 
-At the type prompt, list the available types and choose the entry named
-**Linux LUKS** when it is available. The numeric type code can change between
-versions, so select by the displayed name.
-
-Before writing:
-
-```text
-p
-```
-
-Verify:
-
-- partition 1 is approximately 1 GiB
-- partition 1 is EFI System
-- partition 2 occupies the rest of the drive
-- the disk model and total size are correct
-
-Then write:
-
-```text
-w
-```
+- partition 1 is approximately 1 GiB and type EFI System
+- partition 2 occupies the rest of the drive and is type Linux LUKS
+- the disk model and total size identify the internal drive
 
 ## 16. Format the EFI System Partition
 
@@ -535,7 +514,7 @@ The final command must report that the file parsed successfully.
 
 ```sh
 runuser -u noah -- git clone \
-  --branch cleanup/arch-preflight \
+  --branch main \
   --single-branch \
   https://github.com/NoahWLono/momiji-dots.git \
   /home/noah/momiji-dots
@@ -552,7 +531,7 @@ runuser -u noah -- git \
 It must print:
 
 ```text
-cleanup/arch-preflight
+main
 ```
 
 ## 30. Install the repository-owned hosts file
@@ -572,6 +551,13 @@ systemctl enable NetworkManager.service
 systemctl enable systemd-timesyncd.service
 ```
 
+Make the systemd journal persistent so logs survive reboots and crashes on
+the machine that will be debugged most:
+
+```sh
+install -d /var/log/journal
+```
+
 ## 32. Validate the cloned repository
 
 ```sh
@@ -581,8 +567,6 @@ runuser -u noah -- bash -lc \
 
 At this early stage, a missing Lua parser may produce a warning. There must be
 zero failures.
-
-Do not run `scripts/preflight.sh`.
 
 ## 33. Install the encrypted initramfs configuration
 
@@ -651,6 +635,7 @@ It must contain:
 
 ```text
 rd.luks.name=<the-LUKS-UUID>=cryptroot
+rd.luks.options=discard
 root=/dev/mapper/cryptroot
 rootflags=subvol=@
 ```
@@ -661,12 +646,19 @@ Verify automatically:
 grep -F "rd.luks.name=$LUKS_UUID=cryptroot" \
   /boot/loader/entries/arch.conf
 
+grep -F 'rd.luks.options=discard' \
+  /boot/loader/entries/arch.conf
+
 grep -F 'root=/dev/mapper/cryptroot' \
   /boot/loader/entries/arch.conf
 
 grep -F 'rootflags=subvol=@' \
   /boot/loader/entries/arch.conf
 ```
+
+The discard option lets weekly `fstrim` pass through the encrypted mapping.
+The tradeoff is that free-space patterns become observable on the raw device,
+which is acceptable for this threat model.
 
 ## 36. Perform final chroot checks
 
@@ -748,7 +740,7 @@ git log -1 --oneline
 Expected branch:
 
 ```text
-cleanup/arch-preflight
+main
 ```
 
 ## 42. Update the base system
@@ -784,7 +776,7 @@ This script:
 
 - installs the official repository package list
 - bootstraps `paru-bin` when `paru` is absent
-- installs the AUR application list
+- installs the AUR application list when it has entries
 - installs the repository zram configuration
 - enables Bluetooth and power-profile services
 - enables periodic SSD trimming
@@ -923,6 +915,8 @@ Confirm:
 - audio output appears in `wpctl status`
 - an audio input appears, or the microphone troubleshooting section applies
 - no red Lua configuration error appears
+- `pkexec true` raises a graphical authentication prompt, confirming the
+  polkit agent is alive
 - locking requires the `noah` password
 
 ## 53. Exit the manual session
@@ -1009,6 +1003,16 @@ Expected:
 - `/` and `/home` originate through `/dev/mapper/cryptroot`
 - `/boot` is the unencrypted FAT32 EFI partition
 - no personal data partition is mounted outside LUKS
+
+Verify TRIM passes through the encrypted mapping:
+
+```sh
+sudo fstrim -v /
+```
+
+It must print a trimmed byte count. `the discard operation is not supported`
+means `rd.luks.options=discard` is missing from the boot entry; the weekly
+timer runs with `--quiet-unsupported` and would hide that failure forever.
 
 ## 57. Verify zram
 
@@ -1124,7 +1128,7 @@ mkdir -p ~/notes
 cat >> ~/notes/journal.md <<'EOF'
 # Momiji system journal
 
-- Installed from cleanup/arch-preflight
+- Installed from main
 - LUKS2 root and home
 - btrfs @ and @home
 - zram swap
@@ -1333,14 +1337,22 @@ cd ~/momiji-dots
 
 Do not install driver workarounds preemptively.
 
-First inspect:
+First confirm which driver this unit actually uses (recorded in the journal
+during the live-ISO phase):
 
 ```sh
-dmesg | grep -i rtw89
-journalctl -k -b | grep -i rtw89
+lspci -knn | grep -iA3 net
 ```
 
-Disable NetworkManager Wi-Fi power saving only when symptoms match:
+Then inspect kernel messages for that driver:
+
+```sh
+dmesg | grep -iE 'rtw89|rtw88|mt7921'
+journalctl -k -b | grep -iE 'rtw89|rtw88|mt7921'
+```
+
+The NetworkManager power-saving override is driver-agnostic. Disable Wi-Fi
+power saving only when symptoms match:
 
 ```sh
 sudo install -Dm644 \
@@ -1350,7 +1362,8 @@ sudo install -Dm644 \
 sudo systemctl restart NetworkManager
 ```
 
-Before using the driver option, verify the running module supports the named
+The module options in `etc/rtw89.conf` apply only when the driver in use is
+`rtw89`. Before using them, verify the running module supports the named
 parameters:
 
 ```sh
@@ -1367,6 +1380,10 @@ sudo install -Dm644 \
 
 sudo reboot
 ```
+
+For `rtw88` or `mt7921e` cards, stop at the power-saving override, record the
+symptoms and kernel messages in the journal, and research that module's own
+parameters before writing anything to `/etc/modprobe.d/`.
 
 ## The microphone is missing
 
@@ -1440,14 +1457,11 @@ Before any future reinstall:
 
 ```sh
 cd ~/momiji-dots
-git switch cleanup/arch-preflight
+git switch main
 git pull --ff-only
 
 ./scripts/validate-repo.sh --arch --aur
 ```
-
-If the branch has been merged into `main`, update this runbook and every clone
-command deliberately. Do not silently switch branches during an installation.
 
 ---
 

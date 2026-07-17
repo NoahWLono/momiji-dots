@@ -9,6 +9,7 @@ The clean-install design now uses:
 - one unencrypted 1 GiB EFI System Partition required for boot
 - btrfs subvolumes `@` and `@home` inside the encrypted container
 - zram for swap, with no disk-backed swap and no hibernation
+- weekly fstrim with discards passed through the LUKS mapping
 - SDDM for a normal graphical username and password screen
 - no tty autologin
 
@@ -19,7 +20,8 @@ The resulting boot flow is:
 3. SDDM graphical login
 4. Hyprland and Caelestia
 
-Start with [RUNBOOK.md](RUNBOOK.md).
+Start with [CHECKLIST.md](CHECKLIST.md) for the tickable overview and
+[RUNBOOK.md](RUNBOOK.md) for every command and its verification.
 
 ## Preflight
 
@@ -62,8 +64,10 @@ against current Arch repositories on every push.
 | `rice/sounds/*.wav` | `~/.local/share/momiji/sounds/` |
 | `wallpapers/maple.png` | `~/Pictures/Wallpapers/maple.png` |
 
-The rtw89 Wi-Fi overrides remain symptom-driven. Do not deploy them unless the
-matching troubleshooting checks point to them.
+The rtw89 Wi-Fi overrides remain symptom-driven and apply only to Realtek
+8852-family cards using the `rtw89` driver. This laptop line also ships with
+RTL8822CE (`rtw88`) and MediaTek MT7921 (`mt7921e`) cards depending on the
+batch; identify the hardware before deploying anything.
 
 Never commit Wi-Fi credentials, VPN private keys, a LUKS passphrase, a LUKS
 header backup, browser profiles, or locally licensed media.

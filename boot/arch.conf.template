@@ -1,4 +1,4 @@
 title   Arch Linux (encrypted)
 linux   /vmlinuz-linux
 initrd  /initramfs-linux.img
-options rd.luks.name=LUKS_UUID_PLACEHOLDER=cryptroot root=/dev/mapper/cryptroot rootflags=subvol=@ rw
+options rd.luks.name=LUKS_UUID_PLACEHOLDER=cryptroot rd.luks.options=discard root=/dev/mapper/cryptroot rootflags=subvol=@ rw

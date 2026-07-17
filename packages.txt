@@ -1,4 +1,5 @@
 mesa
+libva-mesa-driver
 vulkan-radeon
 vulkan-icd-loader
 vulkan-tools
@@ -14,6 +15,7 @@ hypridle
 hyprlock
 hyprpicker
 hyprsunset
+hyprpolkitagent
 gnome-keyring
 libsecret
 pipewire
@@ -42,6 +44,7 @@ gvfs-mtp
 gvfs-smb
 gvfs-gphoto2
 exfatprogs
+dosfstools
 sof-firmware
 noto-fonts
 noto-fonts-cjk
@@ -53,9 +56,20 @@ starship
 fastfetch
 btop
 thunar
+thunar-archive-plugin
+tumbler
+xarchiver
+unzip
+p7zip
+imv
+mpv
+zathura
+zathura-pdf-mupdf
 firefox
+obsidian
 libreoffice-fresh
 hunspell
+hunspell-en_ca
 wireguard-tools
 wl-clipboard
 cliphist
@@ -75,6 +89,7 @@ lazygit
 base-devel
 git
 curl
+openssh
 usbutils
 cryptsetup
 sddm

@@ -46,6 +46,7 @@ list_packages() {
 required=(
     README.md
     RUNBOOK.md
+    CHECKLIST.md
     packages.txt
     aur-packages.txt
     boot/loader.conf
@@ -81,6 +82,7 @@ if ((failures == 0)); then
 fi
 
 retired=(
+    scripts/preflight.sh
     etc/getty-autologin.conf
     etc/logind-lid.conf
     etc/sleep-hibernate.conf
@@ -99,15 +101,16 @@ while IFS= read -r pkg; do
     repo_packages[${#repo_packages[@]}]=$pkg
 done < <(list_packages "$ROOT/packages.txt")
 
-if ((${#repo_packages[@]} == 81)); then
-    pass "packages.txt contains 81 package entries"
+if ((${#repo_packages[@]} == 96)); then
+    pass "packages.txt contains 96 package entries"
 else
-    fail "packages.txt contains ${#repo_packages[@]} entries, expected 81"
+    fail "packages.txt contains ${#repo_packages[@]} entries, expected 96"
 fi
 
 for required_pkg in \
-    curl git alsa-utils libreoffice-fresh hunspell wireguard-tools \
-    cryptsetup sddm zram-generator; do
+    curl git openssh alsa-utils libreoffice-fresh hunspell hunspell-en_ca \
+    wireguard-tools cryptsetup sddm zram-generator dosfstools \
+    libva-mesa-driver hyprpolkitagent obsidian; do
     if ! printf '%s\n' "${repo_packages[@]}" | grep -Fxq "$required_pkg"; then
         fail "packages.txt is missing required package: $required_pkg"
     fi
@@ -146,14 +149,14 @@ else
     pass "text files use Unix line endings"
 fi
 
-bad_markers='YOURUSER|YOURREPO|momiji-rice-merge\.zip|momiji-clock-pack\.zip|not yet pushed|73-line list|hypr-cursor\.conf|neko-sounds\.conf'
+bad_markers='YOURUSER|YOURREPO|momiji-rice-merge\.zip|momiji-clock-pack\.zip|not yet pushed|73-line list|hypr-cursor\.conf|neko-sounds\.conf|scripts/preflight\.sh'
 stale_file=$(mktemp "${TMPDIR:-/tmp}/momiji-stale.XXXXXX")
 placeholder_file=$(mktemp "${TMPDIR:-/tmp}/momiji-placeholder.XXXXXX")
 trap 'rm -f "$stale_file" "$placeholder_file"' EXIT
 
 while IFS= read -r -d '' file; do
     case "$file" in
-        *.wav|*.png|*/.git/*|*/scripts/validate-repo.sh|*/scripts/preflight.sh) continue ;;
+        *.wav|*.png|*/.git/*|*/scripts/validate-repo.sh) continue ;;
     esac
     if grep -nE "$bad_markers" "$file" >/dev/null 2>&1; then
         printf '%s:\n' "${file#"$ROOT/"}" >>"$stale_file"
@@ -188,8 +191,17 @@ elif ! grep -Fq \
     fail "boot template does not name the encrypted mapping cryptroot"
 elif ! grep -Fq 'root=/dev/mapper/cryptroot' "$boot"; then
     fail "boot template does not use the decrypted root mapping"
+elif ! grep -Fq 'rd.luks.options=discard' "$boot"; then
+    fail "boot template does not pass discards through LUKS for fstrim"
 else
     pass "encrypted boot entry structure is valid"
+fi
+
+loader="$ROOT/boot/loader.conf"
+if grep -Fxq 'editor no' "$loader"; then
+    pass "systemd-boot kernel command line editor is disabled"
+else
+    fail "loader.conf must contain: editor no"
 fi
 
 hooks=$(tr '\n' ' ' < \
