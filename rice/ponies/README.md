@@ -1,16 +1,16 @@
-# Clockwork Relativity, terminal citizen
+# Clockwork Relativity pony
 
-Files that belong here:
+The custom `clockwork-relativity.pony` file is optional. It is not currently in
+this repository, so a clean install must not depend on it.
 
-1. `clock-source.png`: the pixel art of Clock from
-   https://derpibooru.org/images/3222695
-   Download it manually (this file cannot be fetched by tooling from
-   inside the repo pipeline) and note the artist tag from that page
-   on the line below, since publishing the sprite in a public repo
-   deserves credit even for your own OC's commission/fan art:
+When a finished, licensed `.pony` file is available, place it here and run:
 
-   Artist: FILL-ME-IN from the Derpibooru artist tag
+```sh
+install -Dm644 rice/ponies/clockwork-relativity.pony \
+  ~/.local/share/momiji/ponies/clockwork-relativity.pony
+fortune -s | ponysay -f ~/.local/share/momiji/ponies/clockwork-relativity.pony
+```
 
-2. `clockwork-relativity.pony`: the converted ponysay file, produced
-   per rice/RICING.md section "Clock in the terminal". Commit it once
-   generated so future installs skip the conversion step entirely.
+The Fish greeting already handles the file being absent and uses ponysay's
+normal roster instead. Do not commit source artwork unless its licence permits
+redistribution and the artist credit is recorded here.

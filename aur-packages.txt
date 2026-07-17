@@ -1,0 +1,4 @@
+# Installed after paru is available. Keep one package per line.
+# Currently empty: obsidian moved to packages.txt because it lives in the
+# official extra repository. caelestia-cli is deliberately installed in
+# RUNBOOK Part VIII, not here, so the desktop stage stays ordered.

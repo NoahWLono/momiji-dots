@@ -1,0 +1,10 @@
+# Private or locally licensed sound replacements
+sounds-local/
+rice/sounds-local/
+
+# Local editor and backup files
+*.bak
+*.orig
+*.rej
+*~
+.DS_Store

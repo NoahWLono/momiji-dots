@@ -1,19 +1,18 @@
 # Neko session sounds
 
-Three original clips, synthesized (additive/FM synthesis plus shaped
-noise), dedicated to the public domain (CC0). No anime, game, or VA
-audio was used; these are license-clean for a public repo.
+Three original synthesized clips are dedicated to the public domain under CC0:
 
-- `nya-open.wav` (0.55s): rising-falling "mew", plays on lid open
-- `purr-close.wav` (1.35s): amplitude-modulated purr with two breath
-  cycles, deliberately mastered quieter, plays on lid close
-- `login-chime.wav` (1.0s): three ascending bells with a tiny mew tail,
-  plays at session start (which, with autologin, means every boot)
+- `login-chime.wav`: session start
+- `nya-open.wav`: optional lid-open sound
+- `purr-close.wav`: optional lid-close sound
 
-Swap rule: these filenames are load points. If you find clips you like
-better, drop them over the same names and the config never changes.
-Licensing rule for replacements: anything you did not make or license
-does not belong in a public repo; keep such clips in a gitignored
-`sounds-local/` and point the snippet there instead.
+`scripts/deploy-configs.sh` copies them to
+`~/.local/share/momiji/sounds/`. The login chime is wired by
+`home/caelestia/hypr-user.lua`.
 
-Wiring: see `rice/snippets/neko-sounds.conf`.
+Lid switches vary between laptops. The optional current-format Lua example is
+`rice/snippets/neko-lid-sounds.lua`. Confirm the switch name and state mapping
+with `hyprctl devices` before merging it.
+
+Keep private or separately licensed replacements under `rice/sounds-local/`,
+which is ignored by Git.

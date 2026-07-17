@@ -1,0 +1,32 @@
+name: Validate dotfiles
+
+"on":
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install parsers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fish lua5.4 file python3
+          sudo ln -sf /usr/bin/luac5.4 /usr/local/bin/luac
+      - name: Validate repository
+        run: ./scripts/validate-repo.sh
+
+  arch-package-resolution:
+    runs-on: ubuntu-latest
+    container: archlinux:base
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update the disposable Arch container
+        run: pacman -Syu --noconfirm
+      - name: Resolve official package list
+        run: ./scripts/validate-repo.sh --arch
