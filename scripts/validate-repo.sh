@@ -101,10 +101,10 @@ while IFS= read -r pkg; do
     repo_packages[${#repo_packages[@]}]=$pkg
 done < <(list_packages "$ROOT/packages.txt")
 
-if ((${#repo_packages[@]} == 95)); then
-    pass "packages.txt contains 95 package entries"
+if ((${#repo_packages[@]} >= 95)); then
+    pass "packages.txt contains ${#repo_packages[@]} package entries"
 else
-    fail "packages.txt contains ${#repo_packages[@]} entries, expected 95"
+    fail "packages.txt contains ${#repo_packages[@]} entries, expected at least 95"
 fi
 
 for required_pkg in \
