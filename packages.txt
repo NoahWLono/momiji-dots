@@ -33,6 +33,7 @@ fortune-mod
 frameworkintegration
 fzf
 git
+git-lfs
 github-cli
 gnome-keyring
 grim
@@ -70,6 +71,7 @@ networkmanager
 noto-fonts
 noto-fonts-cjk
 noto-fonts-emoji
+npm
 obsidian
 openssh
 papirus-icon-theme
@@ -84,13 +86,19 @@ polkit-gnome
 ponysay
 power-profiles-daemon
 proton-vpn-gtk-app
+python-pip
+python-pipx
 qt5-wayland
 qt6-wayland
+restic
 ripgrep
 sddm
+shellcheck
 signal-desktop
 sl
 slurp
+snap-pac
+snapper
 sof-firmware
 starship
 sudo
