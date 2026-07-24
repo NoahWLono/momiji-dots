@@ -1,0 +1,12 @@
+[SddmGreeterTheme]
+Name=Momiji Maple
+Description=Maple Nekokami login theme for Momiji
+Type=sddm-theme
+Author=Noah Weinberger
+Copyright=2026 Noah Weinberger
+License=MIT
+Version=1.0
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=momiji-maple
+Theme-API=2.0

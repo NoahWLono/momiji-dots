@@ -21,8 +21,13 @@ if [[ ! -f "$HOME/.config/hypr/hyprland.lua" ]]; then
     exit 1
 fi
 
+# Install the password-required SDDM baseline first.
 sudo install -Dm644 "$ROOT/etc/sddm.conf.d/10-momiji.conf" \
     /etc/sddm.conf.d/10-momiji.conf
+
+# Add the Maple greeter as a separate theme override. This copies the current
+# Caelestia profile image from ~/.face and leaves autologin disabled.
+"$ROOT/scripts/install-sddm-theme.sh"
 
 # Remove remnants of the former tty1 autologin design, if they exist.
 sudo rm -f \
@@ -34,6 +39,6 @@ sudo systemctl set-default graphical.target
 sudo systemctl enable sddm.service
 
 printf '\nSDDM is enabled for the next boot.\n'
-printf 'At the first login screen, select the Hyprland session and sign in as %s.\n' \
+printf 'The Momiji Maple greeter is installed and autologin remains disabled.\n'
+printf 'At the login screen, sign in as %s with the Linux user password.\n' \
     "$(id -un)"
-printf 'SDDM will remember the last user and session. Autologin is disabled.\n'
