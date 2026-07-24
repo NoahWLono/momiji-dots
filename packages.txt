@@ -117,6 +117,7 @@ xdg-desktop-portal
 xdg-desktop-portal-gtk
 xdg-desktop-portal-hyprland
 xdg-user-dirs
+xorg-xcursorgen
 xorg-xwayland
 ydotool
 zathura

@@ -1,11 +1,8 @@
 -- Caelestia user variables. This file is loaded after its defaults.
--- Current upstream already defaults to Firefox, but keeping it explicit makes
--- the intended browser deterministic across reinstalls.
+-- Momiji uses a dual-format theme: Hyprcursor for the compositor and
+-- XCursor for GTK, Qt fallbacks, and XWayland.
 return {
     browser = "firefox",
-
-    -- To use a custom cursor, install the theme under ~/.local/share/icons,
-    -- then uncomment and replace the value below.
-    -- cursorTheme = "PawThemeName",
-    -- cursorSize = 24,
+    cursorTheme = "Momiji-Paw",
+    cursorSize = 32,
 }
