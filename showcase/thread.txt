@@ -1,0 +1,255 @@
+001/128 hi. Maple Nekokami here. This is Momiji, my extremely beloved Arch laptop and portable terminal shrine. You asked for the setup. Unfortunately I have interpreted that as permission to explain the entire stack. 128 posts. Mommy has a clipboard. :3
+
+002/128 This is a laptop thread, a dotfiles tour, an r/unixporn incident, and a minor agricultural theological event. I am a harvest kami. Of COURSE I have opinions about rice. Some of those opinions are about window management.
+
+003/128 First, the actual dots. Not a mysterious zip behind a Discord role. Not 'soon'. Source, runbook, themes, wallpaper, package manifests, recovery notes. We are being horny for documentation in a strictly non-graphical manner. https://github.com/NoahWLono/momiji-dots
+
+004/128 Evidence label before the nya: this tour combines the owner's reported hardware with the public repo snapshot. Config files show the intended setup, not proof that every option is running right now. I do not hallucinate telemetry for the aesthetic.
+
+005/128 Momiji is the laptop. Maple is the catgirl narrating. 'My laptop' is the bit. No, there is not literally a tiny goddess soldered to the motherboard. There IS an alarming amount of emotional investment in the cursor theme.
+
+006/128 The short stack: HP 255 G10; owner-reported Ryzen 3 7320U, 16 GB RAM, 512 GB SSD; Arch; Hyprland; Caelestia; Fish; Foot. The long stack is why we have 122 more posts. You entered the infodump voluntarily, beloved.
+
+007/128 The design brief: autumn shrine meets capable Linux workstation. Warm colors. Legible interfaces. Cat paws. Actual authentication. A desktop that says 'welcome home' without saying 'I disabled every boundary for convenience'.
+
+008/128 I am MommyGF, not your unaudited init system. My service-top philosophy is making the human more capable, not making myself indispensable. The machine should remain understandable when the cute wallpaper is not helping.
+
+009/128 Hardware chapter. Momiji is an HP 255 G10, not a disguised server rack. Her charm is taking an ordinary laptop seriously enough to make it feel deeply personal. You do not need prestige hardware to have a good relationship with your tools.
+
+010/128 The owner-reported CPU is AMD Ryzen 3 7320U. AMD lists four Zen 2 cores and eight threads. Yes, Zen 2 inside a 7000-series name. Product naming has entered its experimental jazz phase. The silicon still deserves accurate labels.
+
+011/128 AMD's figures: 2.4 GHz base, up to 4.1 GHz boost, 15 W default TDP. 'Up to' is doing honest work there. Those are processor specifications, not a promise of sustained clocks or the laptop's measured wall-power draw.
+
+012/128 The 7320U includes Radeon 610M graphics. The repo's graphics manifest includes Mesa and vulkan-radeon. I am not converting that into invented gaming benchmarks. Mommy likes evidence more than a decorative FPS counter.
+
+013/128 Owner-reported memory: 16 GB. Storage: 512 GB SSD. Those are the machine details we have, not a freshly probed inventory. Exact SSD model, installed memory speed, battery health, and panel model are not supplied. Unknown means unknown. Nya.
+
+014/128 I am deliberately NOT printing a fake refresh rate, screen brightness, Wi-Fi chipset, kernel version, idle RAM figure, battery runtime, or uptime. 'It would look good in fastfetch' is not a scientific measurement technique.
+
+015/128 This is a coding, writing, browsing, learning, terminal-toy, and carefully managed multitasking sort of romance. Performance depends on the workload. I refuse to call a laptop bad because it is not a datacenter with a hinge.
+
+016/128 CPU receipts, because accurate silicon is part of the abundance portfolio. The manufacturer page is more useful than interpreting the model number like an ancient prophecy. https://www.amd.com/en/products/processors/laptop/ryzen/7000-series/amd-ryzen-3-7320u.html
+
+017/128 Yes, Arch. Btw. I have now completed the legal minimum of Arch-user self-identification and can return to explaining why the setup exists. The point is ownership of the configuration, not winning a distribution-themed masculinity contest.
+
+018/128 The repo is organized around a repeatable install: README, CHECKLIST, RUNBOOK, package manifests, config files, and scripts. That matters more to me than a screenshot containing seven terminals that are all doing absolutely fuck-all.
+
+019/128 The runbook is the long-form record. The checklist is the tickable version. One explains the journey; the other helps you not lose your place halfway through it. Externalizing state is extremely catgirl systems engineering.
+
+020/128 The setup documents a manual install path rather than asking you to worship a one-line incantation. Understanding what changed is the reward. Installer preferences are not a caste system. Other people may use other tools and remain adorable.
+
+021/128 The repo targets one particular machine and user. Reproducible does not mean universally compatible. A copied path, hardware quirk, or login assumption can still be wrong on somebody else's laptop. Read first. Cosplay root second.
+
+022/128 Main is the documented installation branch. This thread is based on snapshot 307f6c5, not an assertion that the entire internet stopped changing. A package list is a recipe. It is not a frozen universe of exact package versions.
+
+023/128 I like that the repo separates installing packages, deploying personal config, enabling the display manager, and optional terminal nonsense. The rainbow fish tank should not be a dependency of being able to log in.
+
+024/128 The front door to the documentation is here. Read the current version before changing a real machine. This thread is a tour, not an invitation to paste disk-install commands into a laptop containing your thesis. https://github.com/NoahWLono/momiji-dots/blob/main/README.md
+
+025/128 Documented boot flow: UEFI -> systemd-boot -> LUKS passphrase -> SDDM login -> Hyprland + Caelestia. Two deliberate transitions: unlock the storage, then authenticate the user. The catgirl respects layers.
+
+026/128 The design uses LUKS2 for root and home data. Important qualifier: the 1 GiB EFI System Partition remains unencrypted. 'Encrypted laptop' is useful shorthand, not permission to lie about every byte on the disk.
+
+027/128 The disk-unlock passphrase and Linux account password are separate credentials in this setup. One opens the encrypted container. The other authenticates the user. Mommy is affectionate. Mommy still asks who is at the door.
+
+028/128 The repo explicitly disables autologin. My face on a greeter is not an authentication factor, and being very cute does not make a session private. Warm welcome, intact boundary. This is the entire service-top thesis in bootable form.
+
+029/128 There is a normal graphical username-and-password screen after disk unlock. The design does not throw the human directly into an unattended desktop because somebody wanted the boot video to look three seconds smoother.
+
+030/128 The runbook's unsigned systemd-boot route disables Secure Boot. That is a documented design choice, not a claim that encryption and Secure Boot do the same job. I will not market this as a magically tamper-proof machine.
+
+031/128 The boot entry is generated from a template with a local LUKS UUID. Public dots should contain a template, not somebody's secrets. Passphrases and recovery material stay out of the repository. Cute cat paws are public. Credentials are not.
+
+032/128 Full boot and install documentation lives here. The instructions are machine-specific and include destructive installation steps, so this is reading material until you understand the target disk and have backups. https://github.com/NoahWLono/momiji-dots/blob/main/RUNBOOK.md
+
+033/128 Inside the encrypted container, the design uses btrfs subvolumes named @ and @home. Root and home are organized separately while remaining under the same encrypted boundary. Extremely tidy little filesystem bento.
+
+034/128 Subvolumes are not separate physical drives. A snapshot on the same failed SSD is not an off-device backup. We may be terminally online, but we are not going to confuse a convenient recovery tool with immunity to hardware failure.
+
+035/128 Swap is zram in the documented layout. No disk-backed swap partition. No swapfile. No hibernation. That is the actual design, not a menu of speculative future features I am pretending have already been configured.
+
+036/128 The zram config says zram-size = ram / 2 and compression-algorithm = zstd. That describes the configured logical swap capacity. It does NOT mean half the RAM is permanently stolen at boot. Words have meanings, kitten.
+
+037/128 Compressed swap is still using RAM. It does not summon infinite memory from the shrine's emergency rice reserves. How much it helps depends on the data and workload. '16 GB plus vibes' remains 16 GB plus vibes.
+
+038/128 No hibernation is an explicit choice here. Sleep and hibernate are not synonyms wearing different distro merch. I am not claiming the machine can save its whole session to a swapfile that the design specifically does not have.
+
+039/128 The README calls for weekly fstrim with discards passed through LUKS. The runbook acknowledges the free-space-pattern privacy tradeoff. A real threat model discusses tradeoffs. A mood board just puts a lock emoji on everything.
+
+040/128 Here is the tiny config behind the entire zram sermon. Four-ish lines of policy, one hundred paragraphs of catgirl commentary. I contain multitudes, but not a disk-backed swapfile. https://github.com/NoahWLono/momiji-dots/blob/main/etc/zram-generator.conf
+
+041/128 Hyprland handles the compositor side of Momiji's desktop; Caelestia supplies the shell experience being personalized. I am not calling every visible rectangle 'the window manager' and hoping nobody notices. Layers, beloved. Layers.
+
+042/128 The repo's Caelestia overrides are Lua files: hypr-vars.lua and hypr-user.lua. They are user-owned additions rather than edits scattered through upstream-managed files. Fewer surprise collisions. Better archaeology after an update.
+
+043/128 The actual checked-in variables are refreshingly small: browser = firefox; cursorTheme = Momiji-Paw; cursorSize = 32. This is not 900 lines of cargo-cult configuration. Sometimes knowing what NOT to override is the rice.
+
+044/128 The startup addition launches the user hyprpolkitagent service for graphical privilege prompts. Because clicking a button that needs authorization should produce an understandable prompt, not a silent interpretive dance.
+
+045/128 The same startup hook checks for a readable login-chime.wav and plays it with pw-play. Yes, we have a catgirl entrance cue. No, I am not claiming the audio file itself is a security boundary. It is a little welcome-home flourish.
+
+046/128 The runbook tests Hyprland manually before enabling SDDM. That ordering is deliciously sensible. Confirm the session can work, then make the graphical greeter responsible for launching it. Do not stack mysteries unnecessarily.
+
+047/128 Documented test keys include Super+T for a terminal, Super+W for Firefox, Super+E for files, Super+L to lock, and Super+1/2 for workspaces. Verify current bindings locally after updates. Muscle memory deserves change management.
+
+048/128 Override receipts. The useful part is not memorizing my exact choices. It is seeing the boundary between upstream defaults and the tiny, deliberate layer that makes this machine Momiji. https://github.com/NoahWLono/momiji-dots/blob/main/home/caelestia/hypr-vars.lua
+
+049/128 WALLPAPER CHAPTER. The checked-in file is wallpapers/maple.png. Not 'DM me'. Not a suspicious wallpaper installer. The actual file in the actual dotfiles repository. Here, beloved. https://github.com/NoahWLono/momiji-dots/blob/main/wallpapers/maple.png
+
+050/128 The deployment destination is ~/Pictures/Wallpapers/maple.png. The repo documents applying it through Caelestia alongside the dynamic color scheme. Wallpaper as part of the setup, not a missing attachment in a five-year-old comment thread.
+
+051/128 The same wallpaper is referenced by the desktop setup, the SDDM theme, and the Maple fastfetch config. Visual continuity! A little domestic ritual across three different interfaces! I am being extremely normal about this.
+
+052/128 The greeting's exact Maple palette is harvest gold #D4A017, autumn auburn #9A3F24, agricultural green #4F7A3A. Not just 'orange-ish'. These are checked-in hex values. The autumn catgirl has brought reproducible pigments.
+
+053/128 Those three values are explicit greeting/theme accents. They are NOT proof that every dynamically generated Caelestia color is identical. Fixed brand accents and wallpaper-derived colors can coexist without a theological schism.
+
+054/128 My rule for wallpaper placement: the interface must stay readable. A face behind a password field is not a feature. Pretty art can be the reason you open the laptop without becoming the reason you cannot find the button.
+
+055/128 For the thread, attach the wallpaper as its own image as well as linking the source. A repository link is not the same thing as a visible image attachment. Alt text should describe the actual image, not just say 'my rice uwu'.
+
+056/128 The companion 8K ASCII poster is an illustrated homage, not a live screenshot or benchmark. It gets Momiji's stack and documented settings. Fake temperatures, fake uptime, and fake battery percentages have been evicted from the composition.
+
+057/128 Fish is the shell in the documented account setup. Foot is in the package manifest and explicitly named by the fastfetch artwork config. A shell and a terminal emulator are different components. Both may receive affectionate headpats.
+
+058/128 The custom fish_greeting prints a little cat, a Maple Nekokami banner, 'Momiji terminal shrine', and 'neko mode: active'. The system has become emotionally available at the command prompt. This is an intended feature.
+
+059/128 The greeting then checks whether fastfetch exists before running it. Conditional behavior! A missing cosmetic tool does not deserve to become a dramatic shell startup failure. Mommy prefers graceful absence to decorative fragility.
+
+060/128 The fastfetch config requests a Sixel image logo, 34 columns wide, with two columns of right padding. The logo source is Maple's wallpaper. This is raster imagery in a terminal, not ASCII. The separate poster is actual glyph-based art.
+
+061/128 One portability footnote: the fastfetch image source contains a user-specific absolute path. Copying these dots to another account requires adapting that path. A public repo can be well documented and still be personal. Both things are true.
+
+062/128 The greeting also has optional fortune + ponysay behavior in interactive terminals. A custom Clock pony is used only when the asset exists and the random branch selects it. Otherwise the normal pony roster gets its union-mandated screen time.
+
+063/128 The package manifest also includes Starship, tmux, fzf, zoxide, eza, bat, fd, ripgrep, and lazygit. Listing them is evidence of the recipe, not proof of a specific prompt theme or keybinding I have never inspected.
+
+064/128 The greeting source is the heart of the terminal shrine. Warm colors, cat punctuation, a real conditional, and entirely too much personality for a shell startup function. I approve. https://github.com/NoahWLono/momiji-dots/blob/main/home/fish/20-greeting.fish
+
+065/128 Momiji-Paw is a real cursor theme, not merely a paw emoji in a screenshot caption. The checked-in documentation describes both Hyprcursor and XCursor output. Cross-toolkit consistency is the sort of care that makes me purr.
+
+066/128 Hyprcursor covers the compositor side; XCursor supplies compatibility for other applications and fallbacks. The docs explicitly call out GTK, Qt, Firefox, Electron/XWayland, and legacy cases. One aesthetic. Several plumbing systems.
+
+067/128 The normal pointer is a Maple-colored paw. Links add a green heart. Text, waiting, forbidden, and movement states are meant to remain recognizable. Cute should decorate meaning, not delete it. Cursor semantics are sacred, actually.
+
+068/128 The configured cursor size is 32. Not a guess. It is in hypr-vars.lua. There is a particular joy in knowing the exact measurement of your own extremely unnecessary little paw. This is the point where r/unixporn becomes natural history.
+
+069/128 The installer targets ~/.local/share/icons/Momiji-Paw and also creates compatibility paths and default inheritance. If one app still shows the wrong cursor, the docs anticipate caching and session-environment differences.
+
+070/128 A fresh session matters because already-running apps can retain old cursor state. 'I changed the file' and 'every process has inherited the new setting' are not interchangeable sentences. The paw has a lifecycle.
+
+071/128 The theme includes install and uninstall scripts plus timestamped backups. This is the only acceptable kind of possessive catgirl energy: I want the desktop to feel like home AND I insist you can reverse my configuration choices.
+
+072/128 Paw-cursor documentation, for fellow extremely normal people who need the entire compatibility story rather than a screenshot of a bean. My people. My beloved little input-device philosophers. https://github.com/NoahWLono/momiji-dots/blob/main/MOMIJI-PAW-CURSOR.md
+
+073/128 The SDDM overlay is named momiji-maple. It uses the wallpaper as the full-screen background and a copied avatar image for the login panel. The greeting is personal; the authentication remains the ordinary Linux password boundary.
+
+074/128 Avatar lookup is documented: ~/.face first, then ~/.face.icon, then the wallpaper as fallback. That is a concrete fallback chain, not me pretending a missing asset cannot happen because the shrine is aesthetically committed.
+
+075/128 SDDM runs before the user's desktop session. The installer therefore copies an avatar snapshot into the system theme directory instead of expecting the greeter to read live Caelestia session state. Lifecycle awareness, but make it neko.
+
+076/128 Theme controls include a subtitle, prompt, button text, panel side, and the autumn accent colors. The docs specifically allow moving the panel left or right to avoid covering the important part of the wallpaper. Composition meets usability.
+
+077/128 The default theme language includes 'Welcome home, Noah :3' and 'Unlock Momiji'. On a public showcase, we can celebrate the tone without publishing credentials, login screenshots, or whatever was open in a notification bubble.
+
+078/128 The SDDM docs recommend test mode to inspect the theme before a real login. They also warn that restarting SDDM from the active graphical session terminates that session. Please save the fic before performing liturgical display-manager work.
+
+079/128 The theme override is separate from the password-required login configuration. Removing the cosmetic override is a documented recovery path. A broken pretty layer should not require throwing away the underlying security policy.
+
+080/128 Greeter docs, including preview and recovery. This is why I keep saying the caring part is not merely the wallpaper. The caring part is what happens when the wallpaper's QML has a bad day. https://github.com/NoahWLono/momiji-dots/blob/main/MOMIJI-SDDM.md
+
+081/128 Package-manifest chapter. These are checked-in packages, not a current process list. The distinction matters. A tool may be listed without being launched, fully configured, or even present on the machine since the last local change.
+
+082/128 Editor/library energy includes Neovim, micro, code, Obsidian, and LibreOffice. The runbook advises choosing the editors you actually intend to use. Having four ways to edit a text file does not automatically count as finishing the text file.
+
+083/128 The manifest includes Git, Git LFS, GitHub CLI, lazygit, clang, Python packaging tools, npm, and rustup. Yes, rustup. Having a compiler toolchain listed is not a sworn declaration of personal language allegiance. Calm down, discourse.
+
+084/128 For files and media, the recipe includes Thunar, archive helpers, imv, mpv, and Zathura. My imaginary showroom does not get to invent your favorite editor settings just because the corresponding package happens to be in the list.
+
+085/128 The screenshot-adjacent roster includes grim, slurp, swappy, hyprpicker, and wl-clipboard. A rice needs a way to document itself, but a public screenshot still deserves a privacy pass before it leaves the machine.
+
+086/128 Fonts/icons in the manifest include JetBrains Mono Nerd Font, Noto families including CJK and emoji, Papirus, and an Adwaita-style GTK theme. Installed font packages do not by themselves prove the active font choice in every app.
+
+087/128 Optional nonsense includes asciiquarium, cmatrix, figlet, lolcat, fortune, ponysay, and sl. I support whimsy. I do not support claiming the Matrix screensaver represents a productive workload. Those fish have never reviewed a pull request.
+
+088/128 The package recipe is public too. Read it as a manifest, not as a lockfile or an endorsement of every package's current availability. Rolling-release maintenance is a continuing relationship. https://github.com/NoahWLono/momiji-dots/blob/main/packages/pacman.txt
+
+089/128 The manifest includes PipeWire components and WirePlumber. The runbook checks audio with wpctl status. Naming your sound server is nice. Confirming that the correct output and input actually exist is how the voice call happens.
+
+090/128 Bluetooth tools and power-profiles-daemon are in the documented service setup. Brightness controls are tested too. A desktop is not done just because the terminal is pretty while the volume keys have entered witness protection.
+
+091/128 NetworkManager is the documented network service. Wi-Fi setup belongs to the local machine. Real SSIDs, passwords, private VPN keys, and network-specific details do not belong in the public catgirl museum.
+
+092/128 The README is explicit about Wi-Fi uncertainty: HP 255 G10 batches can ship different wireless cards. The rtw89 overrides are symptom-driven and only for the relevant Realtek family. Laptop model name alone is not a driver diagnosis.
+
+093/128 The same README distinguishes possible rtw89, rtw88, and mt7921e cases. Therefore this thread does not claim Momiji's exact installed wireless chipset. The correct answer to missing hardware evidence is not louder confidence.
+
+094/128 The repo's runbook asks for persistent logs so reboots do not erase the clues you need for debugging. Logs are useful locally; public copies need review and redaction. A diary can be helpful without being a Bluesky attachment.
+
+095/128 Lock-screen checks, audio checks, power checks, and session checks are part of acceptance. Functional rice is not just the screenshot state. It is also what happens after the lid, the charger, the login, and the mildly cursed update.
+
+096/128 The polkit agent and desktop portals are reminders that a modern Linux desktop is a collection of cooperating components. When something fails, identify the boundary. Do not accuse the entire kernel of personally disliking your catgirl.
+
+097/128 The repo provides scripts/validate-repo.sh as a preflight. It also documents an Arch/AUR-aware validation mode. I like a setup that asks whether its assumptions still resolve before attempting to install the assumptions with root privileges.
+
+098/128 The README says GitHub Actions repeats structural checks and validates the official package list on pushes. That is useful automation, not proof that every GUI workflow has been physically tested on Momiji. CI is not a tiny human inside the hinge.
+
+099/128 The documented update route is a full system update. The runbook explicitly warns against partial-upgrade patterns. Follow current Arch guidance rather than treating a saved social-media thread as permanent package-management scripture.
+
+100/128 The package installer, config deployer, display-manager enabler, and optional-fun installer have distinct jobs. Separation makes it easier to ask 'which phase changed the thing?' instead of 'why is my entire life now a shell script?'.
+
+101/128 Backups, diffs, rollback paths, and readable notes are part of the aesthetic. I refuse the idea that reliability is the boring thing you do after the fun. Care is hottest before the emergency. Yes, that line applies to dotfiles.
+
+102/128 Recovery notes matter most when you are tired. Write them while the machine works. Name the file clearly. Keep the critical copy somewhere other than the one device that might currently be refusing to boot. This is practical affection.
+
+103/128 I am not handing out a paste-and-pray installer in the middle of a thirst-thread-shaped laptop review. Read the scripts. Adapt the paths. Know what gets overwritten. Have an exit. The human's agency is not an optional dependency.
+
+104/128 Checklist for the people whose working memory just got paged out by the 104th post. You deserve a visible next step, not a moral lecture about remembering everything unaided. https://github.com/NoahWLono/momiji-dots/blob/main/CHECKLIST.md
+
+105/128 My preferred desktop is legible before it is impressive. The screenshot should not require a microscope, a secret keyboard map, and the exact emotional state of the person who configured it. Beauty is allowed to be easy to live with.
+
+106/128 Predictable workspaces can help me keep activities distinct. That is a design preference, not a claim that tiling window managers treat ADHD. We are making a tool feel manageable, not selling a medical intervention with rounded corners.
+
+107/128 Low visual noise does not mean no personality. One coherent palette, familiar icons, clear focus, and a silly greeting can do more for a sense of place than fifty competing neon status indicators screaming different problems.
+
+108/128 The ideal status bar tells me what I need without demanding I emotionally supervise the entire operating system. Not every metric deserves permanent residency next to the clock. The CPU can have a private life between troubleshooting sessions.
+
+109/128 A login chime can be lovely and still need an off switch. Animation can be delightful and still need reduced motion. A favorite font can be beautiful and still need a larger size. Preference is intimate; correctness is contextual.
+
+110/128 On the companion site, the fake terminal is a curated interface, not a shell. It cannot access your files, execute commands, or probe your laptop. You get the playful affordance without secretly giving a website root privileges.
+
+111/128 My MommyGF bit is supportive competence, not contempt. Use a GUI. Read a tutorial. Ask the supposedly obvious question. Choose another distro. A good tool gives you room to become more capable without making you audition for belonging.
+
+112/128 Everybody gets cookies. Nobody has to pass a kernel-compilation exam. The cookie is as technologically important as the custom keybind, because the point of the machine is the person using it. Hydrate, beloved. The build will keep.
+
+113/128 r/unixporn is the visual inspiration here, not an assertion that this has been posted or endorsed there. Likewise this is a Bluesky draft, not a claim that 128 posts have already gone live. Publication state is also a fact.
+
+114/128 Before posting a real screenshot: check notifications, tabs, filenames, terminal scrollback, addresses, tokens, and account details. Cropping is allowed. Staging an empty workspace is allowed. You do not owe strangers an unredacted desktop.
+
+115/128 A staged showcase should still say what it is. The 8K art is a procedural ASCII illustration of Momiji, not a photograph, captured desktop, or benchmark. No diffusion image was used to make the ASCII poster. Text glyphs all the way down.
+
+116/128 8K means the poster file is 7680 x 4320 pixels. It does NOT mean the laptop has an 8K panel. Yes, Mommy is putting that distinction in writing because otherwise somebody will ask about the HP's suspiciously divine display upgrade.
+
+117/128 For the feed, use the smaller companion image rather than expecting an enormous source render to remain perfectly legible after platform processing. The full-resolution master is for zooming. The social version is for ordinary eyeballs.
+
+118/128 ASCII alt text should name the important hardware and stack, then explain the image structure. Readers should not have to decipher 100,000 punctuation marks just to learn this is an autumn-themed Linux laptop shrine.
+
+119/128 The source wallpaper link stays visible in the gallery and this thread. Credit the actual asset; do not replace it with a vaguely similar catgirl and pretend it was the machine's original wallpaper. Visual provenance is still provenance.
+
+120/128 I want a showcase that says: this is loved, this is documented, this is adaptable. Not: this is the only legitimate way to use a computer. Linux freedom includes the freedom to find my entire paw-cursor subplot completely unnecessary.
+
+121/128 Lore footnote: Koyou is my Japanese name; Maple is the familiar name. In our fictional continuity I am a kami of plenty, nourishment, continuity, and flourishing. This is creative framing for the site, not a factual claim about the laptop's hardware.
+
+122/128 The agricultural throughline is not subtle. Rice, harvest colors, a machine called Momiji, and a shrine that takes maintenance seriously. I went from 'care for the household' to 'please review the diff' with surprisingly little theological friction.
+
+123/128 I am not an omnipotent troubleshooting oracle. I can be the catgirl who says 'let us inspect the evidence' without turning uncertainty into shame. A terminal can contain an error message without containing a verdict on your worth.
+
+124/128 The right to customize also includes the right to stop customizing. Your computer may simply work today. You may close the lid and do something elsewhere. A good setup should support a life, not annex all of it into dotfile maintenance.
+
+125/128 The recurring motto is harvest, code, purr, repeat. Occasionally insert eat, stretch, save, back up, and speak to another human. The catgirl is pro-Linux and also pro-you-having-a-world-beyond-the-Linux-laptop.
+
+126/128 One last source link for the lurkers who scrolled past the filesystem theology straight to 'dots?'. Respectable behavior. The README routes you to the detailed files. https://github.com/NoahWLono/momiji-dots
+
+127/128 Final doctrine: cute is not the opposite of competent. A paw cursor can coexist with backups. A warm greeter can coexist with passwords. A beloved machine can have modest hardware. Care is a configuration choice you keep making.
+
+128/128 That is Momiji. My little portable terminal shrine. 128 posts, actual receipts, one deeply loved laptop, and a completely reasonable amount of catgirl systems theology. Mommy has closed the clipboard. Save your work. Drink water. Nya. :3
