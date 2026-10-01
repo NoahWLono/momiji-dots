@@ -8,7 +8,7 @@ permissions:
   contents: read
 concurrency:
   group: mapleos-preview
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   build-test-publish:
     if: github.repository == 'NoahWLono/momiji-dots'
@@ -93,7 +93,7 @@ jobs:
           echo "Release: https://github.com/$GITHUB_REPOSITORY/releases/tag/$tag" >> "$GITHUB_STEP_SUMMARY"
       - name: Preserve diagnostics and source even on failure
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: mapleos-evidence-${{ github.run_id }}
           retention-days: 14
