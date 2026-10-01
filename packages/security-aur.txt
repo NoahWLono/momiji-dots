@@ -1,0 +1,16 @@
+autopsy
+burpsuite
+cewl
+enum4linux-ng
+evil-winrm
+exploitdb-git
+guymager
+metagoofil
+netexec
+recon-ng
+responder
+seclists
+sherlock-project
+testssl.sh-git
+theharvester
+zaproxy-bin

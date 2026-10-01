@@ -71,3 +71,81 @@ batch; identify the hardware before deploying anything.
 
 Never commit Wi-Fi credentials, VPN private keys, a LUKS passphrase, a LUKS
 header backup, browser profiles, or locally licensed media.
+
+
+
+<!-- MOMIJI-SECSTACK-BEGIN -->
+
+## Momiji SecStack
+
+Momiji can be provisioned as a broad security-research workstation while remaining ordinary Arch Linux.
+
+
+The security layer deliberately does **not**:
+
+- add the BlackArch repository
+- replace Arch Linux with BlackArch
+- modify the desktop environment
+- globally overwrite package files
+- automatically enable security-related daemons
+- automatically change user groups
+
+The result is essentially BlackArch-style tooling with normal Arch package hygiene.
+
+### Security files
+
+| File | Purpose |
+|---|---|
+| `scripts/momiji-secstack.fish` | Main Fish security-workstation provisioner |
+| `packages/security.txt` | Security packages from configured Arch repositories |
+| `packages/security-aur.txt` | Optional security packages installed through the AUR |
+| `etc/pacman.conf` | Momiji pacman configuration, including the `ILoveCandy` progress animation |
+
+### SecStack dry run
+
+```fish
+./scripts/momiji-secstack.fish --dry-run
+```
+
+### Default security stack
+
+```fish
+./scripts/momiji-secstack.fish
+```
+
+### Everything
+
+```fish
+./scripts/momiji-secstack.fish --everything
+```
+
+The full optional mode adds lab virtualization, SDR/radio tooling, and AI-security tooling without adding the BlackArch repository.
+
+## Pac-Man pacman progress bar
+
+Momiji enables pacman's built-in Pac-Man progress animation through:
+
+```ini
+Color
+ILoveCandy
+VerbosePkgLists
+ParallelDownloads = 5
+```
+
+The tracked configuration lives at:
+
+```text
+etc/pacman.conf
+```
+
+To manually deploy the tracked version on a fresh Momiji installation:
+
+```fish
+sudo cp /etc/pacman.conf /etc/pacman.conf.bak
+sudo install -Dm644 etc/pacman.conf /etc/pacman.conf
+pacman-conf >/dev/null; and echo "pacman.conf OK :3"
+```
+
+Use security tooling only against systems, applications, networks, and devices that you own or have explicit authorization to test.
+
+<!-- MOMIJI-SECSTACK-END -->

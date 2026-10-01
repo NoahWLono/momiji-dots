@@ -1,0 +1,165 @@
+afflib
+afl++
+afl-utils
+age
+aircrack-ng
+android-tools
+apktool
+arp-scan
+bettercap
+bind
+binutils
+binwalk
+buildah
+bulk_extractor
+bully
+capstone
+checksec
+chkrootkit
+clamav
+cosign
+crunch
+dc3dd
+ddrescue
+dirb
+dirsearch
+dive
+elfutils
+ethtool
+ettercap
+feroxbuster
+ffuf
+foremost
+freerdp
+gdb
+ghex
+ghidra
+gitleaks
+gnupg
+gobuster
+grype
+hashcat
+hashdeep
+hcxdumptool
+hcxtools
+helm
+hexyl
+honggfuzz
+hping
+hydra
+imagemagick
+impacket
+inetutils
+iperf3
+iw
+jadx
+john
+k9s
+keystone
+kismet
+kubectl
+ldns
+libewf
+lldb
+ltrace
+lynis
+macchanger
+masscan
+mdk4
+medusa
+metasploit
+mitmproxy
+mtr
+nasm
+net-tools
+netsniff-ng
+ngrep
+nikto
+nmap
+openbsd-netcat
+openldap
+openssl
+openvpn
+osquery
+patchelf
+pax-utils
+perl-image-exiftool
+pngcheck
+podman
+proxychains-ng
+pwndbg
+python-frida-tools
+python-yara
+r2ghidra
+radamsa
+radare2
+reaver
+rhash
+rizin
+rkhunter
+ropgadget
+ropper
+rz-cutter
+rz-ghidra
+samba
+scalpel
+scrcpy
+semgrep
+skopeo
+sleuthkit
+smali
+smbclient
+socat
+sqlmap
+ssdeep
+ssh-audit
+strace
+syft
+tcpdump
+termshark
+testdisk
+tlsh
+tor
+torsocks
+traceroute
+trivy
+trufflehog
+unicorn
+upx
+valgrind
+volatility3
+wapiti
+wavemon
+wfuzz
+whatweb
+whois
+wifite
+wireless_tools
+wireshark-cli
+wireshark-qt
+wpscan
+yara
+yasm
+zzuf
+
+# ============================================================
+# OPTIONAL LAB / VIRTUALIZATION STACK
+# ============================================================
+# qemu-desktop
+# virt-manager
+# libvirt
+# edk2-ovmf
+# swtpm
+# dnsmasq
+# bridge-utils
+# docker
+# distrobox
+
+# ============================================================
+# OPTIONAL SDR / RADIO STACK
+# ============================================================
+# rtl-sdr
+# hackrf
+# gnuradio
+# inspectrum
+# gqrx
