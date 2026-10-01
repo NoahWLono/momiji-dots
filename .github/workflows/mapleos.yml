@@ -1,0 +1,26 @@
+name: MapleOS ISO
+on:
+  push:
+    branches: [mapleos-v1]
+    paths: ['mapleos/**', '.github/workflows/mapleos.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Verify build host
+        run: |
+          uname -a
+          df -h /
+          docker version
+          test -c /dev/kvm && echo 'KVM available' || true
+      - name: Verify Arch tooling and current packages
+        run: |
+          docker run --rm archlinux:base bash -euc '
+            pacman -Syu --noconfirm archiso
+            pacman -Si hyprland archinstall firefox fish foot fastfetch sddm waybar fuzzel swaybg networkmanager
+            cat /usr/share/archiso/configs/releng/profiledef.sh
+          '
