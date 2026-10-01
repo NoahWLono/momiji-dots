@@ -6,21 +6,103 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: mapleos-preview
+  cancel-in-progress: false
 jobs:
-  preflight:
+  build-test-publish:
+    if: github.repository == 'NoahWLono/momiji-dots'
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 45
+    permissions:
+      contents: write
     steps:
-      - name: Verify build host
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Prepare isolated build output and VM tools
         run: |
-          uname -a
+          mkdir -p mapleos-out
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends qemu-system-x86 ovmf python3-pil
           df -h /
-          docker version
-          test -c /dev/kvm && echo 'KVM available' || true
-      - name: Verify Arch tooling and current packages
+      - name: Build signed-package Archiso image
         run: |
-          docker run --rm archlinux:base bash -euc '
-            pacman -Syu --noconfirm archiso
-            pacman -Si hyprland archinstall firefox fish foot fastfetch sddm waybar fuzzel swaybg networkmanager
-            cat /usr/share/archiso/configs/releng/profiledef.sh
-          '
+          docker run --rm --privileged \
+            -v "$GITHUB_WORKSPACE:/src:ro" \
+            -v "$GITHUB_WORKSPACE/mapleos-out:/out" \
+            -w /src -e MAPLE_OUT_DIR=/out \
+            -e SOURCE_DATE_EPOCH="$(git show -s --format=%ct HEAD)" \
+            archlinux:base@sha256:b21322c663be387c0ed9cbc7bbbfe18e41633ad4e7b7c77cfad45f128be20040 \
+            bash -euc 'pacman -Syu --noconfirm archiso python; bash mapleos/build.sh'
+      - name: Boot actual ISO through BIOS and UEFI
+        run: sudo python3 mapleos/boot_test.py mapleos-out
+      - name: Prepare checksummed release payload
+        run: |
+          sudo chown -R "$(id -u):$(id -g)" mapleos-out
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          out=Path('mapleos-out')
+          evidence=json.loads((out/'boot-tests.json').read_text())
+          assert len(evidence['tests']) == 2 and all(t['passed'] for t in evidence['tests'])
+          iso,=out.glob('*.iso')
+          if iso.stat().st_size >= 2_000_000_000:
+              import subprocess
+              subprocess.run(['split','-b','1900000000',str(iso),str(iso)+'.part-'],check=True)
+              (out/'REASSEMBLE.txt').write_text(f'cat {iso.name}.part-* > {iso.name}\nsha256sum -c ISO-SHA256SUMS\n')
+              (out/'raw').mkdir()
+              iso.rename(out/'raw'/iso.name)
+          lines=[]
+          for p in sorted(out.iterdir()):
+              if p.is_file() and p.name != 'SHA256SUMS':
+                  with p.open('rb') as f: digest=hashlib.file_digest(f,'sha256').hexdigest()
+                  lines.append(f'{digest}  {p.name}\n')
+          (out/'SHA256SUMS').write_text(''.join(lines))
+          PY
+      - name: Publish verified technology preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(cat mapleos/VERSION)
+          tag="mapleos-v${version}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo 'Existing release is immutable for this workflow; bump VERSION to publish a new build.'
+            exit 1
+          fi
+          cat > /tmp/maple-release.md <<'EOF'
+          # MapleOS: First Harvest
+
+          An independent Arch-based **technology preview**, not a stable daily-driver release.
+
+          Maple-themed Hyprland desktop, Fish, Firefox and an opt-in AI workspace assistant with individually approved sandboxed tools. User-selected local or cloud endpoint; no API keys, subscription, model weights or background agent bundled.
+
+          **Verified by this workflow:** actual ISO boot through BIOS and UEFI, live identity, non-root workspace sandbox checks, SSH inactive, Hyprland startup and zero reported configuration errors. See the attached JSON, serial logs and screenshots.
+
+          **Not yet verified:** disk installation, encrypted-install workflow, physical hardware/driver coverage, complete Caelestia packaging, reproducible rebuilds, publisher signatures or comprehensive redistribution review. The installer is an experimental online Archinstall-plus-overlay flow. Test a disposable VM and back up before touching disks.
+
+          Live login: `maple` / `maple`. Secure Boot is not supported by this unsigned preview. x86-64 only.
+
+          Download the ISO and verify `ISO-SHA256SUMS`. If split ISO parts are present, follow `REASSEMBLE.txt` first. Checksums detect corruption; they are not a publisher signature. Documentation, source, package versions and third-party notices accompany the image.
+          EOF
+          gh release create "$tag" --target "$GITHUB_SHA" --draft --prerelease \
+            --title "MapleOS ${version} | First Harvest" --notes-file /tmp/maple-release.md
+          find mapleos-out -maxdepth 1 -type f -print0 | xargs -0 -n 1 gh release upload "$tag"
+          gh release edit "$tag" --draft=false --prerelease
+          echo "Release: https://github.com/$GITHUB_REPOSITORY/releases/tag/$tag" >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve diagnostics and source even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mapleos-evidence-${{ github.run_id }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            mapleos-out/*.json
+            mapleos-out/*.log
+            mapleos-out/*.txt
+            mapleos-out/*.md
+            mapleos-out/*.png
+            mapleos-out/*.tar.gz
+            mapleos-out/*SHA256SUMS
