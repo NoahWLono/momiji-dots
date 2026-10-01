@@ -20,6 +20,8 @@ jobs:
           sudo ln -sf /usr/bin/luac5.4 /usr/local/bin/luac
       - name: Validate repository
         run: ./scripts/validate-repo.sh
+      - name: Test Maple installer and Fish syntax
+        run: python3 -B -m unittest discover -s tests -v
 
   arch-package-resolution:
     runs-on: ubuntu-latest
@@ -30,3 +32,13 @@ jobs:
         run: pacman -Syu --noconfirm
       - name: Resolve official package list
         run: ./scripts/validate-repo.sh --arch
+
+  maple-ascii-runtime:
+    runs-on: ubuntu-latest
+    container: archlinux:base
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Fish, Fastfetch and Python in the disposable container
+        run: pacman -Syu --noconfirm --needed fish fastfetch python
+      - name: Test config preservation, backups, Fish syntax and real Fastfetch rendering
+        run: python3 -B -m unittest discover -s tests -v

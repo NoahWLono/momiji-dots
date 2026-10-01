@@ -15,6 +15,9 @@ if [[ ! -f "$HOME/.config/hypr/hyprland.lua" ]]; then
     exit 1
 fi
 
+# Deploy the text logo and greeting together, with backups and no sudo.
+fish "$ROOT/scripts/momiji-maple.fish" install --no-preview
+
 deploy_file() {
     src=$1
     target=$2
@@ -29,8 +32,6 @@ deploy_file "$ROOT/home/caelestia/hypr-vars.lua" \
     "$HOME/.config/caelestia/hypr-vars.lua"
 deploy_file "$ROOT/home/caelestia/hypr-user.lua" \
     "$HOME/.config/caelestia/hypr-user.lua"
-deploy_file "$ROOT/home/fish/20-greeting.fish" \
-    "$HOME/.config/fish/conf.d/20-greeting.fish"
 
 for wav in "$ROOT"/rice/sounds/*.wav; do
     install -Dm644 "$wav" \

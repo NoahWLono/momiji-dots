@@ -1,46 +1,40 @@
 # Maple Nekokami terminal greeting.
-# Overrides Caelestia's default fish_greeting without modifying upstream files.
+# Overrides Caelestia's default without modifying upstream files.
+# Installed with: fish scripts/momiji-maple.fish install
 
 function fish_greeting
-    # Maple palette:
-    # harvest gold, autumn auburn, agricultural green
+    status is-interactive; or return
+    # Stay silent in redirected/non-terminal sessions.
+    isatty stdout; or return
+    if test "$TERM" = dumb
+        return
+    end
 
     set_color D4A017
-    echo "   /\\_/\\      Maple Nekokami"
-    echo "  ( o.o )     Momiji terminal shrine"
-    echo "   > ^ <      neko mode: active"
-    echo
-
-    set_color 9A3F24
-    echo '#   #  ###  ####  #     #####       #   # ##### #   #  ###  #   #  ###  #   # #####'
-    echo '## ## #   # #   # #     #           ##  # #     #  #  #   # #  #  #   # ## ##   #  '
-    echo '# # # ##### ####  #     ####        # # # ####  ###   #   # ###   ##### # # #   #  '
-    echo '#   # #   # #     #     #           #  ## #     #  #  #   # #  #  #   # #   #   #  '
-    echo '#   # #   # #     ##### #####       #   # ##### #   #  ###  #   # #   # #   # #####'
-    echo
-
+    printf '\n%s\n' '  MOMIJI // Maple Nekokami'
     set_color 4F7A3A
-    echo '                  harvest • code • purr • repeat :3'
+    printf '%s\n\n' '  harvest / code / purr / repeat :3'
     set_color normal
-    echo
 
     if command -q fastfetch
-        fastfetch \
-            --config "$HOME/momiji-dots/rice/fastfetch/config-maple.jsonc" \
-            --key-padding-left 5
+        # Use the installed default config, preserving the user module layout.
+        # Stack the portrait above the information in narrow terminal splits.
+        if set -q COLUMNS; and test "$COLUMNS" -lt 95
+            command fastfetch --logo-position top
+        else
+            command fastfetch
+        end
     end
 end
 
-# Optional pony fortune in new interactive terminals.
-# The custom Clock pony is optional. If it is unavailable, ponysay uses
-# its normal roster instead.
-
-if status is-interactive; and command -q ponysay; and command -q fortune
-    set -l clock ~/.local/share/momiji/ponies/clockwork-relativity.pony
-
-    if test -r $clock; and test (random 0 1) -eq 0
-        fortune -s | ponysay -f $clock
-    else
-        fortune -s | ponysay
+# Preserve the existing optional pony fortune behavior.
+if status is-interactive; and isatty stdout; and test "$TERM" != dumb
+    if command -q ponysay; and command -q fortune
+        set -l clock ~/.local/share/momiji/ponies/clockwork-relativity.pony
+        if test -r $clock; and test (random 0 1) -eq 0
+            fortune -s | ponysay -f $clock
+        else
+            fortune -s | ponysay
+        end
     end
 end

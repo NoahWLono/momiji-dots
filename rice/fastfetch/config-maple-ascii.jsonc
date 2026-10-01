@@ -1,0 +1,13 @@
+{
+    "logo": {
+        "type": "file",
+        "source": "~/.config/fastfetch/maple-ascii.txt",
+        "padding": { "right": 3 },
+        "color": {
+            "1": "#D4A017",
+            "2": "#9A3F24",
+            "3": "#4F7A3A",
+            "4": "#EDE4CE"
+        }
+    }
+}
