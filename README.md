@@ -149,3 +149,21 @@ pacman-conf >/dev/null; and echo "pacman.conf OK :3"
 Use security tooling only against systems, applications, networks, and devices that you own or have explicit authorization to test.
 
 <!-- MOMIJI-SECSTACK-END -->
+
+## Clipboard-only screenshots
+
+
+
+Press **Ctrl + Shift + S** to select a screen region.
+
+Release the mouse to copy the PNG to the clipboard.
+
+No screenshot is saved to disk. Escape cancels.
+
+
+
+Uses Fish, grim, slurp, and wl-clipboard.
+
+The shortcut lives in `home/caelestia/hypr-user.lua`.
+
+The deployer installs `home/fish/region-copy.fish`.

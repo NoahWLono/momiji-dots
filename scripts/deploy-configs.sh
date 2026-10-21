@@ -33,6 +33,7 @@ deploy_file "$ROOT/home/caelestia/hypr-vars.lua" \
 deploy_file "$ROOT/home/caelestia/hypr-user.lua" \
     "$HOME/.config/caelestia/hypr-user.lua"
 
+deploy_file "$ROOT/home/fish/region-copy.fish" "$HOME/.local/bin/region-copy.fish"
 for wav in "$ROOT"/rice/sounds/*.wav; do
     install -Dm644 "$wav" \
         "$HOME/.local/share/momiji/sounds/$(basename "$wav")"

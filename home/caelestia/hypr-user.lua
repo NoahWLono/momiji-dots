@@ -16,3 +16,7 @@ hl.on("hyprland.start", function()
         .. " && pw-play " .. string.format("%q", login_sound)
     )
 end)
+
+-- Ctrl+Shift+S: screenshot region to clipboard
+
+hl.bind("CTRL + SHIFT + S", hl.dsp.exec_cmd("fish " .. string.format("%q", os.getenv("HOME") .. "/.local/bin/region-copy.fish")))
